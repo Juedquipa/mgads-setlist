@@ -17,9 +17,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
-import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,17 +32,19 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.ui.theme.NeonGreen
 import com.mgasd.neonbeatssetlits.viewmodel.ClienteViewModel
 import java.util.concurrent.Executors
@@ -54,7 +56,6 @@ fun A2_EscaneoQR(
     onMesaIdentificada: () -> Unit
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
     val isFlashlightOn by viewModel.isFlashlightOn.collectAsState()
     val session by viewModel.session.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -83,6 +84,29 @@ fun A2_EscaneoQR(
         }
     }
 
+    A2_EscaneoQRContent(
+        isFlashlightOn = isFlashlightOn,
+        isLoading = isLoading,
+        error = error,
+        hasCameraPermission = hasCameraPermission,
+        onBack = onBack,
+        onToggleFlashlight = { viewModel.toggleFlashlight() },
+        onHelpClick = { viewModel.onHelpClick() },
+        onQRCodeScanned = { viewModel.onQRCodeScanned(it) }
+    )
+}
+
+@Composable
+fun A2_EscaneoQRContent(
+    isFlashlightOn: Boolean,
+    isLoading: Boolean,
+    error: String?,
+    hasCameraPermission: Boolean,
+    onBack: () -> Unit,
+    onToggleFlashlight: () -> Unit,
+    onHelpClick: () -> Unit,
+    onQRCodeScanned: (String) -> Unit
+) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Black
@@ -92,11 +116,14 @@ fun A2_EscaneoQR(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // 1. Camera Feed / Permission Request
+            // 1. Camera Feed
             if (hasCameraPermission) {
                 CameraPreview(
                     onBarcodeScanned = { barcode ->
-                        barcode.rawValue?.let { viewModel.onQRCodeScanned(it) }
+                        val code = barcode.rawValue
+                        if (code != null) {
+                            onQRCodeScanned(code)
+                        }
                     },
                     isFlashlightOn = isFlashlightOn
                 )
@@ -105,19 +132,15 @@ fun A2_EscaneoQR(
                     modifier = Modifier.fillMaxSize().background(Color(0xFF0C1609)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        CircularProgressIndicator(color = NeonGreen)
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            "Esperando permiso de cámara...",
-                            color = Color.White,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    Text(
+                        "Esperando permiso de cámara...",
+                        color = Color.White,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 
-            // 2. Camera Cutout Overlay (Uses CompositingStrategy for BlendMode.Clear)
+            // 2. Camera Cutout Overlay
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -129,10 +152,7 @@ fun A2_EscaneoQR(
                         val left = (canvasWidth - viewfinderSize) / 2
                         val top = (canvasHeight - viewfinderSize) / 2
 
-                        // Full dark overlay
                         drawRect(color = Color(0xCC0A0A0A))
-
-                        // Viewfinder cutout
                         drawRoundRect(
                             color = Color.Transparent,
                             topLeft = Offset(left, top),
@@ -181,7 +201,7 @@ fun A2_EscaneoQR(
                     )
 
                     IconButton(
-                        onClick = { viewModel.toggleFlashlight() },
+                        onClick = onToggleFlashlight,
                         modifier = Modifier
                             .size(40.dp)
                             .clip(CircleShape)
@@ -193,6 +213,8 @@ fun A2_EscaneoQR(
                             tint = if (isFlashlightOn) NeonGreen else Color.White
                         )
                     }
+
+                    Spacer(modifier = Modifier.size(40.dp))
                 }
 
                 Spacer(modifier = Modifier.weight(0.4f))
@@ -218,7 +240,7 @@ fun A2_EscaneoQR(
 
                 // Footer Help Button
                 OutlinedButton(
-                    onClick = { viewModel.onHelpClick() },
+                    onClick = onHelpClick,
                     modifier = Modifier
                         .padding(bottom = 48.dp)
                         .height(52.dp),
@@ -230,7 +252,7 @@ fun A2_EscaneoQR(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.HelpOutline,
+                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
@@ -256,9 +278,9 @@ fun A2_EscaneoQR(
                 }
             }
 
-            error?.let {
+            error?.let { errorText ->
                 Text(
-                    text = it,
+                    text = errorText,
                     color = Color.Red,
                     modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
                     fontWeight = FontWeight.Bold
@@ -288,7 +310,7 @@ fun CameraPreview(
             val executor = ContextCompat.getMainExecutor(ctx)
             cameraProviderFuture.addListener({
                 val cameraProvider = cameraProviderFuture.get()
-                val preview = Preview.Builder().build().also {
+                val preview = androidx.camera.core.Preview.Builder().build().also {
                     it.surfaceProvider = previewView.surfaceProvider
                 }
 
@@ -308,7 +330,10 @@ fun CameraPreview(
                         val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                         scanner.process(image)
                             .addOnSuccessListener { barcodes ->
-                                barcodes.firstOrNull()?.let { onBarcodeScanned(it) }
+                                val firstBarcode = barcodes.firstOrNull()
+                                if (firstBarcode != null) {
+                                    onBarcodeScanned(firstBarcode)
+                                }
                             }
                             .addOnCompleteListener {
                                 imageProxy.close()
@@ -366,10 +391,8 @@ fun ViewfinderVisuals() {
         modifier = Modifier.size(260.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Pulsing Corners
         ViewfinderCorners(alpha = cornersAlpha)
 
-        // Scanning Line
         Box(
             modifier = Modifier
                 .fillMaxWidth(0.85f)
@@ -391,7 +414,6 @@ fun ViewfinderVisuals() {
                     cap = StrokeCap.Round
                 )
 
-                // Glow effect for the line
                 drawRect(
                     brush = Brush.verticalGradient(
                         colors = listOf(
@@ -464,5 +486,22 @@ fun ViewfinderCorners(alpha: Float) {
                 style = Stroke(width = strokeWidth.toPx(), cap = StrokeCap.Round)
             )
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF000000)
+@Composable
+fun A2_EscaneoQRPreview() {
+    NeonBeatsTheme {
+        A2_EscaneoQRContent(
+            isFlashlightOn = false,
+            isLoading = false,
+            error = null,
+            hasCameraPermission = true,
+            onBack = {},
+            onToggleFlashlight = {},
+            onHelpClick = {},
+            onQRCodeScanned = {}
+        )
     }
 }
