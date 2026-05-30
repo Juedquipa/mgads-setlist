@@ -1,0 +1,754 @@
+NEON BEATS SETLIST
+Documento de Especificaciones Técnicas del Proyecto
+Taller Integrador Final — Desarrollo de Aplicaciones Móviles
+Universidad Autónoma de Bucaramanga (UNAB)
+Maestría en Gestión y Desarrollo de Software
+Docente: Mg. Fabián Enrique Suárez Carvajal
+Versión 1.0  ·  2025
+1. Resumen Ejecutivo
+Neon Beats SETLIST es una aplicación móvil Android que digitaliza y democratiza la experiencia musical dentro de bares y establecimientos de entretenimiento. Permite a los clientes solicitar canciones desde su mesa escaneando un código QR, sin necesidad de registro, mediante un sistema de créditos vinculados al consumo activados por el mesero.
+El sistema integra tres roles diferenciados — Cliente, Mesero y Administrador/DJ — con flujos de usuario independientes, gestión de cola de reproducción en tiempo real y control de calidad del contenido musical mediante un proceso de aprobación administrado por el DJ. La integración con la API pública de Spotify garantiza un catálogo musical profesional con metadatos, previsualizaciones y búsqueda avanzada.
+1.1 Datos del Proyecto
+Nombre de la aplicación
+Neon Beats SETLIST
+Institución
+Universidad Autónoma de Bucaramanga — UNAB
+Programa
+Maestría en Gestión y Desarrollo de Software (MGADS)
+Asignatura
+Taller Integrador Final — Desarrollo de Aplicaciones Móviles
+Docente
+Mg. Fabián Enrique Suárez Carvajal
+Modalidad
+Trabajo colaborativo — Equipos de 2 personas
+Plataforma objetivo
+Android (mínimo API 24 — Android 7.0)
+Herramienta de desarrollo
+Android Studio + Jetpack Compose
+API externa
+Spotify Web API (pública)
+Arquitectura
+MVVM + Repository Pattern + REST Backend propio
+Versión del documento
+1.0
+2. Problemática Identificada y Justificación
+2.1 Problemática
+En los bares y establecimientos de entretenimiento con música en vivo o ambiente musical controlado por un DJ, la experiencia del cliente frente a la música es completamente pasiva. Los mecanismos actuales para solicitar canciones son informales, ineficientes y generan fricciones:
+El cliente debe levantarse de su mesa y acercarse físicamente al DJ para hacer una solicitud, interrumpiendo su experiencia social.
+Las solicitudes se hacen de forma verbal, sin registro ni control, generando confusión, olvidos y favoritismos involuntarios.
+No existe equidad entre mesas: una mesa puede monopolizar la selección musical mientras otras no participan.
+El DJ no tiene herramientas para filtrar contenido inapropiado ni controlar la calidad del material propuesto por los clientes.
+El bar no cuenta con mecanismos para vincular la participación musical al consumo, desaprovechando una palanca de fidelización.
+2.2 Justificación
+La música es uno de los factores más determinantes en la experiencia dentro de un bar. Neon Beats SETLIST propone una solución tecnológica que digitaliza y democratiza la experiencia musical mediante:
+Acceso sin fricción: el cliente accede desde su propio dispositivo móvil escaneando un QR, sin registro previo.
+Sistema de créditos vinculado al consumo: cada pedido activa créditos de solicitud musical, incentivando directamente el consumo.
+Control de calidad: todas las canciones externas pasan por aprobación del admin antes de ingresar a la cola.
+Equidad entre mesas: el sistema de créditos garantiza que todas las mesas participen en igualdad de condiciones.
+Visibilidad en tiempo real: clientes y DJ comparten la misma información sobre la cola de reproducción.
+3. Objetivos del Proyecto
+3.1 Objetivo General
+Desarrollar una aplicación móvil Android funcional que permita a los clientes de un bar solicitar canciones desde su mesa mediante un sistema de créditos vinculados al consumo, integrando roles diferenciados para clientes, meseros y administradores, con gestión en tiempo real de la cola de reproducción musical y búsqueda a través de la API pública de Spotify.
+3.2 Objetivos Específicos
+Diseñar e implementar una interfaz móvil de alta fidelidad con tres flujos de usuario diferenciados (Cliente, Mesero, Administrador/DJ) siguiendo principios de UI/UX centrado en el usuario, con identidad visual Industrial Neon Underground.
+Implementar un sistema de autenticación por roles: acceso del administrador y mesero mediante credenciales JWT, y acceso del cliente mediante escaneo de código QR de mesa con ML Kit.
+Desarrollar el mecanismo de activación de créditos musicales mediante códigos PIN de 6 dígitos generados por el mesero, con tiempo de expiración configurable y validación en tiempo real contra el backend.
+Construir un módulo de gestión de cola de reproducción que permita al DJ visualizar, reordenar, aprobar y rechazar canciones en tiempo real con actualización automática en todos los dispositivos conectados.
+Integrar la API pública de Spotify para búsqueda de canciones, recuperación de metadatos (portada, artista, duración, preview de 30 segundos) y reproducción del catálogo del bar.
+Implementar la persistencia de datos mediante arquitectura MVVM con Room para caché local y backend REST propio (Node.js + PostgreSQL) con despliegue en plataforma cloud (Railway o Render).
+Distribuir la aplicación de forma instalable mediante Firebase App Distribution y contenerizar el backend con Docker para despliegue reproducible.
+4. Público Objetivo
+4.1 Perfil Cliente
+Atributo
+Descripción
+Edad
+25 – 35 años
+Perfil
+Adultos jóvenes profesionales o estudiantes de posgrado
+Dispositivo
+Smartphone Android con cámara y conexión WiFi
+Contexto de uso
+Bares de rock, electrónica y música alternativa anglosajona
+Motivación
+Participación activa en la experiencia musical del establecimiento
+Nivel tech
+Alto — usuarios habituales de apps de streaming (Spotify, Apple Music)
+4.2 Perfil Operativo
+Rol
+Perfil
+Necesidad principal
+Mesero
+Personal de servicio en turno
+Generar códigos PIN rápidamente entre pedidos
+Admin / DJ
+Dueño, gerente o DJ del bar
+Control total de la cola y calidad musical
+5. Integración con la API Pública de Spotify
+5.1 Descripción General
+Neon Beats SETLIST utiliza la Spotify Web API (API pública gratuita) para proveer un catálogo musical profesional con metadatos completos, imágenes de alta calidad, previsualizaciones de audio y búsqueda avanzada. Esta integración reemplaza la necesidad de mantener un catálogo propio de metadatos musicales.
+5.2 Endpoints Utilizados
+Endpoint
+Método
+Uso en la app
+/v1/search
+GET
+Búsqueda de canciones por nombre o artista (A6)
+/v1/tracks/{id}
+GET
+Detalle de canción: título, artista, álbum, duración, preview_url
+/v1/tracks
+GET
+Recuperar múltiples tracks a la vez para el catálogo del bar
+/v1/artists/{id}
+GET
+Información del artista para pantallas de detalle
+/v1/albums/{id}/tracks
+GET
+Listar tracks de un álbum para el catálogo del bar
+5.3 Autenticación con Spotify
+Se utiliza el flujo Client Credentials (OAuth 2.0) que no requiere autenticación del usuario final, ideal para acceso al catálogo público:
+El backend obtiene un access_token usando client_id y client_secret registrados en Spotify Developer Dashboard.
+El token se renueva automáticamente cada 3600 segundos (1 hora).
+El cliente Android nunca maneja credenciales de Spotify — todas las llamadas se proxean a través del backend propio para seguridad.
+5.4 Datos Recuperados por Canción
+Campo Spotify
+Tipo
+Uso en la app
+id
+String
+Identificador único de la canción en el sistema
+name
+String
+Título de la canción (A6, A7, A8, cola)
+artists[0].name
+String
+Nombre del artista principal
+album.images[0].url
+URL
+Portada del álbum (thumbnail en listas y cards)
+duration_ms
+Integer
+Duración para estimar tiempo de espera en cola
+preview_url
+URL
+Preview de 30 segundos para validación del DJ
+explicit
+Boolean
+Flag para filtrar contenido explícito si está desactivado
+5.5 Catálogo del Bar
+El administrador construye el catálogo propio del establecimiento buscando canciones a través de Spotify y guardando sus IDs en la base de datos propia. Esto permite:
+Búsqueda filtrada: los clientes solo ven el catálogo aprobado por el bar, no todo Spotify.
+Metadatos siempre actualizados: se recuperan de Spotify en tiempo real, sin mantenimiento manual.
+Propuestas externas: los clientes pueden proponer canciones fuera del catálogo, que el DJ evalúa usando el preview de Spotify antes de aprobar o rechazar.
+6. Arquitectura del Sistema
+6.1 Visión General
+El sistema sigue una arquitectura cliente-servidor con tres capas bien definidas: aplicación Android (cliente), backend REST propio (servidor) y servicios externos (Spotify API). La app Android implementa el patrón MVVM obligatorio con Repository Pattern para abstracción de fuentes de datos.
+6.2 Diagrama de Capas (MVVM + Backend)
+┌─────────────────────────────────────────────────────────────────┐
+│                    ANDROID APP (Jetpack Compose)                │
+│  UI Layer: Composables (Screens A1–A9, B1–B4, C1–C7)           │
+│      ↕ observa StateFlow / collectAsState()                     │
+│  ViewModel Layer: lógica de presentación, manejo de estado      │
+│      ↕ llama a Repository                                       │
+│  Repository Layer: fuente única de verdad                       │
+│      ↕ Room (local)          ↕ Retrofit (remoto)               │
+└─────────────┬───────────────────────────┬───────────────────────┘
+              │                           │
+    Room DB (SQLite)            REST Backend propio
+    Caché offline               Node.js + PostgreSQL
+    Cola, sesión activa         (Railway / Render)
+                                       │
+                              Spotify Web API
+                              (proxeada por backend)
+6.3 Stack Tecnológico Completo
+Capa
+Tecnología
+Justificación
+UI
+Jetpack Compose
+Obligatorio. UI declarativa moderna para Android
+Navegación
+Navigation Compose
+Grafos de navegación para los 3 flujos (20 pantallas)
+Estado local
+mutableStateOf + remember
+Obligatorio. Estado reactivo de formularios y UI
+Estado global
+ViewModel + StateFlow
+Obligatorio. Arquitectura MVVM
+Persistencia local
+Room (SQLite)
+Caché offline de cola y sesión activa
+HTTP Client
+Retrofit + OkHttp
+Comunicación con backend propio y Spotify
+Serialización
+Gson / Moshi
+Parseo de respuestas JSON de la API
+QR Scanner
+Google ML Kit
+Escaneo del QR de mesa en pantalla A2
+Imágenes
+Coil
+Carga asíncrona de portadas de álbum desde Spotify
+Autenticación
+JWT (JSON Web Tokens)
+Login seguro para Admin y Mesero
+Backend
+Node.js + Express
+API REST propia con autenticación y CRUD completo
+Base de datos
+PostgreSQL
+Persistencia de mesas, usuarios, canciones, cola
+ORM
+Prisma
+Manejo de modelos y migraciones de base de datos
+Deploy backend
+Railway / Render
+URL pública accesible (+3 pts bonus)
+Containerización
+Docker
+Dockerfile + imagen + contenedor (+2 pts bonus)
+Distribución APK
+Firebase App Distribution
+APK instalable sin Play Store (+5 pts bonus)
+6.4 Componentes Jetpack Compose Obligatorios
+Componente
+Implementación en la app
+Scaffold
+Estructura base de todas las pantallas (20 screens)
+TopAppBar
+Header con nombre del bar, badge de mesa/rol y acciones
+NavHost + NavController
+Navegación completa entre los 3 flujos y 20 destinos
+LazyColumn
+Cola de reproducción, catálogo, historial de solicitudes, mesas
+TextField + validaciones
+Login, búsqueda de canciones, PIN, configuración del bar
+BottomNavigation
+Navegación principal del cliente (4 tabs) y admin (5 tabs)
+remember + mutableStateOf
+Estado local de formularios, PIN input, toggles
+ViewModel + collectAsState
+Estado de sesión, cola, créditos, aprobaciones pendientes
+7. Modelo de Datos
+7.1 Entidades del Sistema
+Entidad
+Campos principales
+Descripción
+Mesa
+id, numero, qr_code, activa
+Mesas físicas del bar, identificadas por QR único
+Usuario
+id, nombre, usuario, password_hash, rol
+Administradores y meseros del sistema
+CodigoPIN
+id, pin, mesa_id, mesero_id, creditos, estado, expira_en
+PINes generados por mesero para activar créditos
+Sesion
+id, mesa_id, creditos_disponibles, creditos_usados, inicio
+Sesión activa de un cliente en una mesa
+Cancion
+id, spotify_id, titulo, artista, duracion, thumbnail_url, fuente
+Canciones del catálogo o propuestas
+Solicitud
+id, cancion_id, sesion_id, mesa_id, estado, timestamp
+Solicitudes de canciones realizadas por clientes
+Cola
+id, solicitud_id, posicion, activa
+Cola de reproducción ordenada y priorizada
+Catalogo
+id, cancion_id, bar_id, activo
+Canciones aprobadas por el bar para solicitud directa
+8. API REST — Backend Propio
+8.1 Endpoints del Sistema
+Método
+Endpoint
+Descripción
+AUTENTICACIÓN
+POST
+/auth/login
+Login de admin / mesero. Retorna JWT.
+POST
+/auth/validate-qr
+Validar QR de mesa y crear sesión de cliente
+POST
+/auth/refresh
+Renovar JWT expirado
+MESAS
+GET
+/mesas
+Listar todas las mesas del bar (admin)
+GET
+/mesas/:id/sesion
+Estado de sesión activa de una mesa
+POST
+/mesas
+Crear nueva mesa (admin)
+CÓDIGOS PIN
+POST
+/codigos/generar
+Mesero genera PIN de 6 dígitos para una mesa
+POST
+/codigos/validar
+Cliente valida PIN y obtiene créditos de solicitud
+GET
+/codigos/mesero/:id
+Historial de códigos del mesero en turno
+COLA DE REPRODUCCIÓN
+GET
+/cola
+Cola de reproducción completa en tiempo real
+POST
+/cola/solicitar
+Cliente solicita una canción (consume 1 crédito)
+PUT
+/cola/reordenar
+Admin reordena posiciones en la cola
+DELETE
+/cola/:id
+Admin elimina canción de la cola
+DELETE
+/cola
+Admin limpia toda la cola
+APROBACIONES
+GET
+/aprobaciones/pendientes
+Lista de canciones externas pendientes de revisión
+PUT
+/aprobaciones/:id/aprobar
+Admin aprueba canción → entra a la cola
+PUT
+/aprobaciones/:id/rechazar
+Admin rechaza canción → notifica al cliente
+SPOTIFY (proxeado)
+GET
+/spotify/search?q=
+Búsqueda de canciones en Spotify
+GET
+/spotify/track/:id
+Detalle de canción específica
+MESEROS
+GET
+/meseros
+Listar meseros registrados (admin)
+POST
+/meseros
+Crear nuevo mesero
+PUT
+/meseros/:id
+Editar datos del mesero
+DELETE
+/meseros/:id
+Eliminar o desactivar mesero
+ESTADÍSTICAS
+GET
+/estadisticas/mesas
+Actividad de mesas en tiempo real (admin)
+GET
+/estadisticas/meseros
+Actividad de meseros por turno (admin)
+9. Especificación de Funcionalidades
+9.1 Flujo Cliente — 9 Pantallas
+A1 — Splash / Bienvenida
+Logo 'Neon Beats SETLIST' centrado con efecto neon glow pulsante
+Tagline: 'La música la pones tú'
+Botón único: 'Escanear mesa para comenzar'
+Sin registro, sin cuenta — acceso completamente anónimo
+A2 — Escaneo de QR de Mesa
+Vista de cámara a pantalla completa con overlay oscuro industrial
+Marco de visor animado en neon verde con esquinas pulsantes
+Uso de Google ML Kit para detección en tiempo real del QR
+QR válido → transición inmediata a A3 con animación de éxito
+QR inválido → toast de error con instrucción de ayuda
+A3 — Confirmación de Mesa
+Animación de éxito: check neon verde con expansión circular
+Número de mesa en fuente monospace grande: 'Mesa 7 activada'
+CTA principal: 'Ingresar código de pedido' → A4
+Botón secundario: 'Ver la cola primero' → A5 (sin créditos)
+A4 — Ingreso de Código PIN (reutilizable)
+Input de 6 cajillas individuales con fuente monospace y borde neon al escribir
+Teclado numérico custom con estética industrial (botones cuadrados oscuros)
+Validación en tiempo real contra el backend: PIN correcto / incorrecto / expirado / ya usado
+Error: shake animation + borde rojo + mensaje descriptivo
+Éxito: 4 círculos iluminándose uno a uno + créditos activados
+Pantalla reutilizable — el cliente regresa aquí con cada nuevo pedido
+A5 — Home Principal
+Card 'Sonando ahora' con portada Spotify, título, artista, barra de progreso y ecualizador animado
+Indicador de créditos: fila de círculos (llenos = verde / vacíos = gris)
+Banner ámbar cuando créditos = 0 con CTA para ingresar nuevo código
+Bottom navigation: Buscar · Cola · Mis Solicitudes · Mi Mesa
+A6 — Buscar Canciones
+Búsqueda en tiempo real usando la API de Spotify (proxeada por backend)
+Tab 'Catálogo del bar': canciones pre-aprobadas por el administrador
+Tab 'Proponer desde YouTube': búsqueda y propuesta de canciones externas (requiere aprobación)
+Lista de resultados: portada Spotify (Coil), título, artista, duración, botón 'Solicitar'
+Botón 'Solicitar' desactivado cuando créditos = 0
+A7 — Cola de Reproducción
+Card 'Sonando ahora' con ecualizador animado y datos de Spotify
+Lista numerada de cola: posición, portada, título, artista, mesa solicitante, tiempo estimado
+Solicitud propia resaltada con borde magenta y badge 'Tu solicitud'
+Actualización automática sin necesidad de refrescar
+A8 — Mis Solicitudes
+Contador de créditos usados con barra de progreso neon
+Lista de canciones solicitadas en la sesión con estados: En cola (verde) · Pendiente (ámbar) · Rechazada (rojo) · Ya sonó (gris)
+Timestamp relativo por cada solicitud
+A9 — Mi Mesa
+Número de mesa en display grande con neon glow
+Resumen de sesión: pedidos activados, canciones solicitadas, canciones aprobadas
+Historial de códigos PIN usados (sin mostrar el PIN, solo 'Pedido #1 · 4 solicitudes · hace 32 min')
+Botón: 'Ingresar nuevo código de pedido' → A4
+Modal '¿Cómo funciona?' con explicación del sistema de créditos
+9.2 Flujo Mesero — 4 Pantallas
+B1 — Login del Mesero
+Logo con badge ámbar 'Mesero'
+Campos: Usuario + Contraseña numérica (PIN)
+Autenticación JWT contra el backend propio
+Link de redirección hacia login de administrador
+B2 — Home del Mesero
+Saludo personalizado con nombre del mesero y badge de turno activo
+Botón CTA gigante ámbar: 'Generar código para Mesa' (mitad superior de pantalla)
+Lista de códigos generados en el turno con estados: Activo (ámbar) · Usado (verde) · Expirado (gris)
+Métricas del turno: total códigos generados + tiempo promedio
+B3 — Generación de Código
+Selector de mesas en grid: activa (borde ámbar) / inactiva (borde gris)
+Generación de PIN de 6 dígitos único en el backend (nunca se repite en la sesión)
+PIN mostrado en fuente monospace gigante (64px) con borde ámbar pulsante
+Temporizador de expiración visible (cuenta regresiva, se vuelve rojo en últimos 60s)
+Indicación de créditos que otorga el código (configurable por admin)
+B4 — Mesas Activas
+Grid de mesas del bar con estados visuales en tiempo real
+Al tocar una mesa: detalle de códigos generados y solicitudes de canciones
+9.3 Flujo Administrador / DJ — 7 Pantallas
+C1 — Login del Administrador
+Login con usuario y contraseña (toggle mostrar/ocultar)
+Autenticación JWT con permisos de nivel admin
+Link de redirección hacia login de mesero
+C2 — Dashboard Principal del DJ
+Badge 'EN VIVO' pulsante en neon verde
+Card 'Sonando ahora' con controles: ⏸ Pausar · ⏭ Saltar
+Card 'Próxima en cola' con botón 'Adelantar'
+Métricas en tiempo real: mesas activas · canciones en cola · aprobaciones pendientes
+Acceso rápido a los 5 módulos principales
+C3 — Gestión de Cola
+Lista reordenable con drag-and-drop (drag handle ≡)
+Eliminar canciones individuales con confirmación de un paso
+FAB 'Limpiar toda la cola' con confirmación de dos pasos
+Actualización automática cuando nuevas canciones son aprobadas o solicitadas
+C4 — Aprobaciones Pendientes
+Canciones propuestas fuera del catálogo esperando revisión
+Datos de Spotify para cada propuesta: portada, título, artista, duración, preview de 30s
+Botones Aprobar (verde) / Rechazar (rojo) por cada canción
+Swipe gesture: derecha = aprobar · izquierda = rechazar
+Al aprobar: la canción entra automáticamente a la cola
+Al rechazar: el cliente recibe notificación en A8 con estado 'Rechazada'
+C5 — Estadísticas de Mesas y Meseros
+Tab Mesas: grid con actividad por mesa, borde verde (activa) / gris (inactiva)
+Tab Meseros: lista de meseros en turno con códigos generados y mesas atendidas
+Detalle por mesa: historial completo de solicitudes de la sesión
+C6 — Gestión de Meseros
+Lista de meseros con nombre, usuario, estado activo/inactivo y PIN enmascarado
+Formulario para agregar nuevo mesero: nombre, usuario, PIN de acceso
+Swipe para desactivar temporalmente o eliminar mesero
+Reset de PIN desde la pantalla de edición
+C7 — Configuración del Bar
+Campo editable 'Nombre del bar' con preview en tiempo real: '[NombreBar] SETLIST'
+Stepper: solicitudes por código de pedido (1–10, default 4)
+Stepper: minutos para expirar código de mesero (5–60, default 15)
+Toggle: requerir aprobación para canciones fuera del catálogo
+Toggle: permitir propuestas de canciones externas
+Gestión del catálogo del bar: agregar/eliminar canciones desde Spotify
+10. Roles y Permisos del Sistema
+Funcionalidad
+Cliente
+Mesero
+Admin/DJ
+Sistema
+Escanear QR de mesa
+✅
+—
+—
+—
+Ingresar código PIN
+✅
+—
+—
+—
+Solicitar canciones del catálogo
+✅
+—
+—
+—
+Proponer canciones externas
+✅
+—
+—
+—
+Ver cola de reproducción
+✅
+✅
+✅
+—
+Generar códigos PIN
+—
+✅
+—
+—
+Ver mesas activas
+—
+✅
+✅
+—
+Aprobar / rechazar canciones
+—
+—
+✅
+—
+Reordenar / limpiar cola
+—
+—
+✅
+—
+Controlar reproducción
+—
+—
+✅
+—
+Ver estadísticas
+—
+—
+✅
+—
+Gestionar meseros
+—
+—
+✅
+—
+Gestionar catálogo del bar
+—
+—
+✅
+—
+Configurar parámetros del bar
+—
+—
+✅
+—
+Expirar códigos PIN automáticamente
+—
+—
+—
+✅
+11. Especificaciones de Identidad Visual
+11.1 Concepto Estético
+Industrial Neon Underground — la estética de un bar oscuro de rock con luces de neón. Raw, eléctrico, auténtico. Sin elementos tropicales, sin paletas cálidas, sin bordes redondeados excesivos.
+11.2 Paleta de Colores
+Token
+Hex
+Color de rol
+Uso
+--bg-primary
+#0a0a0a
+Todos
+Fondo principal — near-black con grain texture
+--bg-surface
+#1a1a1a
+Todos
+Cards y superficies
+--bg-elevated
+#242424
+Todos
+Modales y bottom sheets
+--neon-green
+#39FF14
+Cliente
+Acciones primarias, now playing, créditos activos
+--neon-magenta
+#FF2D78
+Admin/DJ
+Acciones admin, badges, aprobaciones
+--neon-amber
+#FFB800
+Mesero
+Generación de códigos, estados pendientes
+--error
+#FF4444
+Sistema
+Rechazo, errores, eliminación
+--text-primary
+#F0F0F0
+Todos
+Texto principal
+--text-secondary
+#888888
+Todos
+Texto secundario y labels
+11.3 Tipografía
+Rol
+Fuente sugerida
+Tamaño base
+Uso
+Display
+Bebas Neue / Barlow Condensed Bold
+48–64sp
+Títulos, nombre del bar, número de mesa, PIN
+Body
+DM Sans / IBM Plex Sans
+14–16sp
+Texto de interfaz, labels, descripciones
+Monospace
+JetBrains Mono
+14–48sp
+PIN de 6 dígitos, número de mesa, códigos
+12. Plan de Desarrollo — Hoja de Ruta
+Semana
+Fase
+Actividades
+1
+Configuración
+Proyecto Android Studio, estructura MVVM, NavGraph 20 pantallas, pantallas estáticas A1–A5
+2
+Autenticación
+Login JWT admin/mesero, flujo QR con ML Kit, flujo de PIN, pantallas B1–B4
+3
+Backend + Spotify
+API REST Node.js, endpoints auth/mesas/PIN, integración Retrofit + Spotify
+4
+Cola en tiempo real
+Gestión de cola C3, aprobaciones C4, Room para caché offline
+5
+Admin completo
+Estadísticas C5, gestión meseros C6, configuración C7, Docker backend
+6
+Cierre
+Testing, corrección de bugs, deploy Railway, Firebase App Distribution, Memoria Técnica PDF
+13. Entregables del Proyecto
+Entregable
+Descripción
+Fase
+Bonus pts
+Documento formal (este)
+Nombre, problemática, público, objetivos, arquitectura
+Fase 1
+—
+Mockup alta fidelidad (Stitch)
+20 pantallas, 3 flujos, identidad visual completa
+Fase 1
+—
+Repositorio GitHub/GitLab
+Código fuente Android + Backend documentado
+Fase 2
+—
+APK instalable
+Distribuida via Firebase App Distribution
+Fase 2
++5 pts
+Backend desplegado
+URL pública accesible (Railway o Render)
+Fase 2
++3 pts
+Backend propio
+API REST + auth JWT + CRUD + PostgreSQL
+Fase 2
++3 pts
+Dockerfile
+Imagen construida y contenedor en ejecución
+Fase 2
++2 pts
+Memoria técnica PDF
+Documento detallado con decisiones y aprendizajes
+Sustentación
+—
+13.1 Puntos Bonus Nivel Master
+Total bonus acumulable: +13 puntos sobre la nota final
++3 pts  Backend propio: API REST completa, autenticación JWT, CRUD, base de datos PostgreSQL propia
++3 pts  Despliegue en nube: backend accesible vía URL pública (Railway, Render, Firebase, etc.)
++2 pts  Docker: Dockerfile, imagen construida y contenedor en ejecución
++5 pts  Distribución real: APK instalable vía Firebase App Distribution, GitHub Releases o Play Store
+14. Criterios de Evaluación y Estrategia
+14.1 Evaluación Docente — 50%
+Criterio
+Peso
+Estrategia del proyecto
+Diseño UX/UI y mockups
+10%
+20 pantallas de alta fidelidad en Google Stitch con identidad visual Industrial Neon Underground sólida y coherente
+Calidad técnica del desarrollo
+12%
+Arquitectura MVVM estricta, código organizado por capas, Jetpack Compose idiomático, Repository Pattern
+Funcionalidad y requerimientos
+12%
+Todos los flujos funcionales, persistencia Room + backend, integración Spotify, QR Scanner, sistema de PINes
+Memoria técnica final
+10%
+Este documento como base, ampliado con decisiones técnicas, retos y aprendizajes del desarrollo
+Citaciones y referencias
+3%
+Android Docs, Spotify API Docs, Jetpack Compose Docs, librerías utilizadas con formato APA
+Presentación y sustentación
+3%
+Demo en vivo de los 3 flujos, defensa de decisiones arquitecturales, respuesta a preguntas técnicas
+14.2 Coevaluación entre Grupos — 50%
+Criterio
+Ventaja competitiva de Neon Beats SETLIST
+Innovación de la propuesta
+Sistema de solicitud musical con créditos por consumo vinculados a PIN del mesero — solución original sin equivalente directo en el mercado colombiano
+Diseño visual y UX
+Identidad Industrial Neon Underground única, 3 roles con colores diferenciados, 20 pantallas coherentes y flujos claramente definidos
+Funcionalidad alcanzada
+20 pantallas completamente funcionales, integración Spotify, QR Scanner, generación de PIN, cola en tiempo real, sistema de aprobaciones
+Complejidad técnica
+Backend propio (Node.js + PostgreSQL) + Docker + despliegue en nube + Firebase App Distribution = máximo puntaje bonus posible (+13 pts)
+Claridad de sustentación
+Arquitectura MVVM documentada, decisiones técnicas justificadas, demo funcional con los 3 roles en vivo, memoria técnica completa
+15. Glosario
+Término
+Definición
+Mesa
+Identificación física del grupo de clientes, activada por escaneo de QR único por mesa
+QR de mesa
+Código QR impreso en la mesa que identifica al cliente en el sistema al ser escaneado
+Solicitud
+Petición de reproducción de una canción realizada por un cliente desde su mesa
+Crédito
+Unidad de solicitud disponible, otorgada al cliente mediante código PIN del mesero
+Código / PIN
+Número único de 6 dígitos generado por el mesero que activa créditos de canciones por pedido
+Catálogo del bar
+Biblioteca de canciones de Spotify pre-aprobadas por el administrador para solicitud directa
+Cola
+Lista ordenada y priorizada de canciones próximas a reproducirse, gestionada por el DJ
+Admin / DJ
+Mismo rol — usuario con acceso completo al sistema, responsable de la música del bar
+Mesero
+Usuario con acceso limitado — genera códigos PIN por pedido durante su turno
+MVVM
+Model-View-ViewModel — arquitectura de software obligatoria para el proyecto
+Room
+Librería de persistencia local SQLite para Android, usada para caché offline
+Retrofit
+Cliente HTTP para Android usado para consumir la API REST propia y Spotify
+Composable
+Función de Jetpack Compose que define un elemento de UI declarativo
+JWT
+JSON Web Token — estándar de autenticación sin estado para admin y mesero
+Spotify Web API
+API pública de Spotify para búsqueda y metadatos de canciones (portada, artista, duración, preview)
+ML Kit
+Librería de Google para procesamiento de imágenes en Android, usada para escaneo de QR
+16. Referencias Bibliográficas
+Android Developers. (2024). Jetpack Compose. Google. https://developer.android.com/compose
+Android Developers. (2024). Navigation Compose. Google. https://developer.android.com/jetpack/compose/navigation
+Android Developers. (2024). Room Persistence Library. Google. https://developer.android.com/training/data-storage/room
+Android Developers. (2024). ViewModel Overview. Google. https://developer.android.com/topic/libraries/architecture/viewmodel
+Google. (2024). ML Kit — Barcode Scanning. https://developers.google.com/ml-kit/vision/barcode-scanning
+Spotify for Developers. (2024). Web API Reference. https://developer.spotify.com/documentation/web-api
+Spotify for Developers. (2024). Client Credentials Flow. https://developer.spotify.com/documentation/web-api/tutorials/client-credentials-flow
+Square, Inc. (2024). Retrofit — A type-safe HTTP client for Android. https://square.github.io/retrofit/
+Coil Contributors. (2024). Coil — Image loading for Android. https://coil-kt.github.io/coil/
+Firebase. (2024). App Distribution. Google. https://firebase.google.com/docs/app-distribution
+Railway. (2024). Railway — Infrastructure, Instantly. https://railway.app/
+Docker Inc. (2024). Docker Documentation. https://docs.docker.com/
+Prisma. (2024). Prisma ORM Documentation. https://www.prisma.io/docs/
+Neon Beats SETLIST — Documento de Especificaciones Técnicas v1.0
+Taller Integrador Final — MGADS — UNAB · 2025

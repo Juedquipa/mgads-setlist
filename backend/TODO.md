@@ -96,6 +96,12 @@ We will split the logic into focused, decoupled Django apps:
 
 *Tenancy Isolation: For Admin/Waiter endpoints, the `Tenant` is inferred implicitly via request.user.tenant. For Client endpoints, the `Tenant` is inferred via the JWT issued upon scanning a valid `qr_code` (which contains the `Table` and `Tenant`).*
 
+### DRF Best Practices & Documentation
+
+- **Architecture Requirements:** Use Django REST Framework best practices strictly. Implement robust `serializers.py` for data validation/transformation, use `views.py` (preferring `ModelViewSet` or `GenericAPIView` where CRUD applies), and leverage DRF permissions and authentications (`IsAuthenticated`, custom permissions for Tenants, etc.). Keep business logic in services or serializers where appropriate.
+
+- **API Documentation:** We will use a documentation generator like `drf-spectacular` to automatically generate OpenAPI 3 schemas and provide a Swagger UI / Redoc endpoint out of the box.
+
 ### Auth (`/api/auth/`)
 
 - `POST /login/`: Admin/Waiter login (Returns JWT).
@@ -150,9 +156,9 @@ We will split the logic into focused, decoupled Django apps:
 ## 4. Pending Implementation Steps (Next Actions)
 
 - [ ] Initialize missing Django apps (`tenants`, `users`, `venues`, `music_queue`, `spotify`).
-- [ ] Install missing dependencies (e.g. `djangorestframework-simplejwt`, `requests` or `httpx` for Spotify calls).
+- [ ] Install missing dependencies (e.g., `djangorestframework-simplejwt`, `drf-spectacular`, `requests` or `httpx` for Spotify calls).
 - [ ] Implement multi-tenant middleware or Base ViewSets to automatically scope queries by `Tenant`.
 - [ ] Implement abstract base models and the specific models mapped above, ensuring `Tenant` FKs are enforced properly.
 - [ ] Connect custom User model to `settings.py` (`AUTH_USER_MODEL`).
 - [ ] Configure Django admin (`admin.py`) for superusers to securely manage `Tenant` creation and inject Spotify credentials.
-- [ ] Decide on real-time update strategy (polling vs Django Channels / WebSockets) for isolated queues.
+- [ ] Real-time update strategy (WebSockets) for isolated queues.

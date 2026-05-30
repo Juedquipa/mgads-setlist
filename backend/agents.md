@@ -39,6 +39,7 @@ This file documents recommended agent usage and repository-specific guidelines. 
 
 ## Agent Guidelines (repository-specific)
 
+- **AI Formatting Hook:** ANY TIME you (the AI agent) generate or modify a Python file, you MUST immediately format the resulting Python file using `black` and sort imports using `isort` via your terminal tools before concluding your turn.
 - **Language Policy:** All code, variables, models, endpoints, and documentation references must be strictly in English. **Do not use Spanish terms in the codebase.**
 - Detect project type before modifying: check for `requirements.txt`, `manage.py`, `pyproject.toml`, and `mobile/` sources. This repository uses Python/Django — do not assume Node.js.
 - Create branches for non-trivial changes (naming convention: `agent/<short-desc>`). Open a PR and include a clear description referencing relevant tests and the spec.
