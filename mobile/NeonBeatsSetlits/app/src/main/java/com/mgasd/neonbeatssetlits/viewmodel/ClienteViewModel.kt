@@ -234,7 +234,8 @@ class ClienteViewModel : ViewModel() {
         if (query.length >= 3) {
             viewModelScope.launch {
                 try {
-                    val response = RetrofitClient.instance.searchSpotify(query)
+                    val sessionToken = _session.value?.token ?: return@launch
+                    val response = RetrofitClient.instance.searchSpotify(sessionToken, query)
                     if (response.isSuccessful) {
                         val tracks = response.body()?.tracks?.items ?: emptyList()
                         _searchResults.value = tracks.map { track ->

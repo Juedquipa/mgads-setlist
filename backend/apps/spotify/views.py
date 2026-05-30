@@ -1,4 +1,5 @@
 import requests
+from apps.music_queue.models import Session
 from apps.users.serializers import ErrorResponseSerializer
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, status, views
@@ -9,7 +10,25 @@ from .services import SpotifyService
 
 
 class SpotifySearchView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+
+    def _resolve_tenant(self, request):
+        user = request.user
+        if getattr(user, "is_authenticated", False) and getattr(user, "tenant", None):
+            return user.tenant
+
+        token = request.headers.get("X-Session-Token")
+        if not token:
+            return None
+
+        session = (
+            Session.objects.select_related("tenant").filter(token=token, is_active=True).first()
+        )
+        if session:
+            request.client_session = session
+            return session.tenant
+
+        return None
 
     @extend_schema(
         summary="Search Spotify tracks",
@@ -32,11 +51,11 @@ class SpotifySearchView(views.APIView):
         },
     )
     def get(self, request):
-        user = request.user
-        if not hasattr(user, "tenant") or not user.tenant:
+        tenant = self._resolve_tenant(request)
+        if not tenant:
             return Response(
-                {"detail": "No tenant associated context."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"detail": "Authentication required."},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         query = request.query_params.get("q")
@@ -47,7 +66,7 @@ class SpotifySearchView(views.APIView):
             )
 
         try:
-            data = SpotifyService.search_tracks(user.tenant, query)
+            data = SpotifyService.search_tracks(tenant, query)
             return Response(data)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
@@ -56,7 +75,25 @@ class SpotifySearchView(views.APIView):
 
 
 class SpotifyTrackView(views.APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+
+    def _resolve_tenant(self, request):
+        user = request.user
+        if getattr(user, "is_authenticated", False) and getattr(user, "tenant", None):
+            return user.tenant
+
+        token = request.headers.get("X-Session-Token")
+        if not token:
+            return None
+
+        session = (
+            Session.objects.select_related("tenant").filter(token=token, is_active=True).first()
+        )
+        if session:
+            request.client_session = session
+            return session.tenant
+
+        return None
 
     @extend_schema(
         summary="Get a Spotify track",
@@ -79,15 +116,15 @@ class SpotifyTrackView(views.APIView):
         },
     )
     def get(self, request, track_id):
-        user = request.user
-        if not hasattr(user, "tenant") or not user.tenant:
+        tenant = self._resolve_tenant(request)
+        if not tenant:
             return Response(
-                {"detail": "No tenant associated context."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"detail": "Authentication required."},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
 
         try:
-            data = SpotifyService.get_track(user.tenant, track_id)
+            data = SpotifyService.get_track(tenant, track_id)
             return Response(data)
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

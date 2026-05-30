@@ -44,7 +44,10 @@ interface ApiService {
 
     // Spotify
     @GET("api/spotify/search/")
-    suspend fun searchSpotify(@Query("q") query: String): Response<SpotifySearchResponse>
+    suspend fun searchSpotify(
+        @Header("X-Session-Token") sessionToken: String? = null,
+        @Query("q") query: String
+    ): Response<SpotifySearchResponse>
 
     @GET("api/spotify/track/{track_id}/")
     suspend fun getSpotifyTrack(@Path("track_id") trackId: String): Response<SpotifyTrack>

@@ -220,7 +220,7 @@ class MeseroViewModel : ViewModel() {
                     id = 0,
                     name = name,
                     qr_code_token = null,
-                    is_active = false,
+                    is_active = true,
                     created_at = ""
                 )
                 val response = RetrofitClient.instance.createTable(newTable)
@@ -372,36 +372,25 @@ class MeseroViewModel : ViewModel() {
     }
 
     fun onGenerateNewCode() {
-        val tableId = _codeGenState.value.selectedTable?.replace("T", "")?.toIntOrNull()
         _codeGenState.update { it.copy(isGenerating = true) }
-        
+
         viewModelScope.launch {
             try {
-                // Creamos un nuevo PIN vinculado a la mesa seleccionada
-                val dummyPin = com.mgasd.neonbeatssetlits.data.model.PinCode(
-                    id = 0,
-                    code = "",
-                    credits = 1,
-                    is_used = false,
-                    created_by = null,
-                    table = tableId,
-                    created_at = "",
-                    used_at = null
-                )
-                
-                val response = RetrofitClient.instance.createPinCode(dummyPin)
-                if (response.isSuccessful) {
-                    val newPin = response.body()
-                    _codeGenState.update { 
-                        it.copy(
-                            generatedCode = newPin?.code ?: "",
-                            isGenerating = false,
-                            secondsRemaining = 300
-                        )
-                    }
-                    loadHomeData() // Refrescar historial
-                } else {
+                val selectedTableId = _codeGenState.value.selectedTable
+                val selectedTable = _tablesState.value.tables.firstOrNull { it.id == selectedTableId }
+
+                if (selectedTable == null || selectedTable.qrCodeToken.isBlank()) {
+                    loadTablesData()
                     _codeGenState.update { it.copy(isGenerating = false) }
+                    return@launch
+                }
+
+                _codeGenState.update {
+                    it.copy(
+                        generatedCode = selectedTable.qrCodeToken,
+                        isGenerating = false,
+                        secondsRemaining = 300
+                    )
                 }
             } catch (e: Exception) {
                 _codeGenState.update { it.copy(isGenerating = false) }
