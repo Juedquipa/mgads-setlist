@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.mgasd.neonbeatssetlits"
-        minSdk = 34
+        minSdk = 28
         targetSdk = compileSdk
         versionCode = 1
         versionName = "1.0"
