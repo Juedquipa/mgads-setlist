@@ -1,26 +1,44 @@
 package com.mgasd.neonbeatssetlits.ui.screens.mesero
 
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -29,6 +47,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
 
@@ -82,7 +101,7 @@ fun B3_GeneracionDeCodigoScreen(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Start
             )
-            
+
             Spacer(modifier = Modifier.height(16.dp))
 
             LazyVerticalGrid(
@@ -95,9 +114,11 @@ fun B3_GeneracionDeCodigoScreen(
                     val isSelected = state.selectedTable == tableId
                     Surface(
                         onClick = { viewModel.onTableSelect(tableId) },
-                        color = if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
+                        color = if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant.copy(
+                            alpha = 0.1f
+                        ),
                         border = androidx.compose.foundation.BorderStroke(
-                            1.dp, 
+                            1.dp,
                             if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant
                         ),
                         shape = RoundedCornerShape(4.dp),
@@ -126,7 +147,7 @@ fun B3_GeneracionDeCodigoScreen(
                 contentAlignment = Alignment.Center
             ) {
                 CornerAccents()
-                
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         "CÓDIGO DE ACCESO",
@@ -134,7 +155,7 @@ fun B3_GeneracionDeCodigoScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         letterSpacing = 2.sp
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
@@ -146,7 +167,7 @@ fun B3_GeneracionDeCodigoScreen(
                         ),
                         color = MaterialTheme.colorScheme.tertiary
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Timer Circular Progresivo
@@ -177,7 +198,9 @@ fun B3_GeneracionDeCodigoScreen(
             ) {
                 Button(
                     onClick = { viewModel.onGenerateNewCode() },
-                    modifier = Modifier.weight(1f).height(64.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(64.dp),
                     shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
@@ -191,7 +214,9 @@ fun B3_GeneracionDeCodigoScreen(
 
                 Button(
                     onClick = { /* Lógica Compartir */ },
-                    modifier = Modifier.weight(1f).height(64.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(64.dp),
                     shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.tertiary,
@@ -224,9 +249,11 @@ fun B3_GeneracionDeCodigoScreen(
 @Preview(showBackground = true)
 @Composable
 fun B3_GeneracionDeCodigoPreview() {
+    val meseroViewModel: MeseroViewModel = viewModel();
+
     NeonBeatsTheme {
         B3_GeneracionDeCodigoScreen(
-            viewModel = MeseroViewModel(),
+            meseroViewModel,
             onBack = {}
         )
     }
