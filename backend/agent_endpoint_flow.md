@@ -61,6 +61,13 @@ This document describes the main backend API flow exposed by the project and how
 - Decrements the session balance by one credit.
 - Broadcasts a queue update to websocket listeners.
 
+### `GET /api/client/requests/`
+
+- Requires `X-Session-Token`.
+- Returns all requests created by the current client session.
+- Each item includes the request status so the client can see whether it is pending, playing, played, or skipped.
+- The list is ordered with the newest requests first.
+
 ## Queue and approvals flow
 
 ### `GET /api/queue/`

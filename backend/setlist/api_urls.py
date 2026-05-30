@@ -2,6 +2,7 @@ from apps.music_queue.views import (
     ApprovalViewSet,
     ClientPinCodeValidateView,
     ClientRequestSongView,
+    ClientRequestListView,
     ClientSessionView,
     PinCodeViewSet,
     QueueViewSet,
@@ -43,6 +44,7 @@ urlpatterns = [
         ClientRequestSongView.as_view(),
         name="client-request-song",
     ),
+    path("client/requests/", ClientRequestListView.as_view(), name="client-requests"),
     # REST Routers
     path("", include(router.urls)),
     # Custom viewsets mapping

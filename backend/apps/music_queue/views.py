@@ -345,3 +345,33 @@ class ClientRequestSongView(views.APIView):
         broadcast_queue_update(session.tenant.id)
 
         return Response(RequestSerializer(song_req).data, status=status.HTTP_201_CREATED)
+
+
+class ClientRequestListView(views.APIView):
+    permission_classes = [HasSessionToken]
+
+    @extend_schema(
+        summary="List client requests",
+        description=(
+            "Returns all song requests created by the current client session so the user can "
+            "check whether each request is pending, playing, played, or skipped. Requires the "
+            "X-Session-Token header."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="X-Session-Token",
+                location=OpenApiParameter.HEADER,
+                required=True,
+                type=str,
+                description="Session token returned by the client session creation endpoint.",
+            )
+        ],
+        responses={
+            200: RequestSerializer(many=True),
+            403: ErrorResponseSerializer,
+        },
+    )
+    def get(self, request):
+        session = request.client_session
+        requests = Request.objects.filter(session=session).order_by("-requested_at")
+        return Response(RequestSerializer(requests, many=True).data)
