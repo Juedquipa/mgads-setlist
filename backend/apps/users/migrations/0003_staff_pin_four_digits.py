@@ -25,10 +25,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name="user",
-            name="staff_pin",
-            field=models.CharField(blank=True, max_length=4, null=True, unique=True),
-        ),
         migrations.RunPython(repopulate_staff_pins, migrations.RunPython.noop),
     ]
