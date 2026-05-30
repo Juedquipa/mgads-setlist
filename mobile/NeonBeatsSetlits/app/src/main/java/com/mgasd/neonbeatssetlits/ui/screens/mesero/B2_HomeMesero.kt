@@ -3,29 +3,65 @@ package com.mgasd.neonbeatssetlits.ui.screens.mesero
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.QueueMusic
+import androidx.compose.material.icons.filled.ReceiptLong
+import androidx.compose.material.icons.filled.RestaurantMenu
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.viewmodel.CodeHistoryItem
 import com.mgasd.neonbeatssetlits.viewmodel.CodeStatus
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
@@ -55,13 +91,20 @@ fun B2_HomeMeseroScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { /* Menu */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.primary)
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 actions = {
                     Surface(
                         color = Color.Transparent,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                        ),
                         shape = RoundedCornerShape(4.dp),
                         modifier = Modifier.padding(end = 16.dp)
                     ) {
@@ -252,7 +295,12 @@ fun MetricCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(24.dp))
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = iconColor,
+                    modifier = Modifier.size(24.dp)
+                )
                 if (subLabel != null) {
                     Text(
                         subLabel,
@@ -300,7 +348,7 @@ fun CodeHistoryListItem(item: CodeHistoryItem) {
         CodeStatus.ACTIVE -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
-    
+
     val statusLabel = when (item.status) {
         CodeStatus.ACTIVE -> "ACTIVO"
         CodeStatus.USED -> "USADO"
@@ -330,13 +378,17 @@ fun CodeHistoryListItem(item: CodeHistoryItem) {
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        if (item.status == CodeStatus.ACTIVE) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.1f)
+                        if (item.status == CodeStatus.ACTIVE) MaterialTheme.colorScheme.tertiary.copy(
+                            alpha = 0.1f
+                        )
                         else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                         RoundedCornerShape(4.dp)
                     )
                     .border(
                         1.dp,
-                        if (item.status == CodeStatus.ACTIVE) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.3f)
+                        if (item.status == CodeStatus.ACTIVE) MaterialTheme.colorScheme.tertiary.copy(
+                            alpha = 0.3f
+                        )
                         else Color.Transparent,
                         RoundedCornerShape(4.dp)
                     ),
@@ -348,9 +400,11 @@ fun CodeHistoryListItem(item: CodeHistoryItem) {
                         fontFamily = FontFamily.Monospace,
                         fontWeight = FontWeight.Bold
                     ),
-                    color = if (item.status == CodeStatus.EXPIRED) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                            else if (item.status == CodeStatus.ACTIVE) MaterialTheme.colorScheme.tertiary
-                            else MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (item.status == CodeStatus.EXPIRED) MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                        alpha = 0.5f
+                    )
+                    else if (item.status == CodeStatus.ACTIVE) MaterialTheme.colorScheme.tertiary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -362,11 +416,13 @@ fun CodeHistoryListItem(item: CodeHistoryItem) {
                         letterSpacing = 2.sp,
                         textDecoration = if (item.status == CodeStatus.USED) TextDecoration.LineThrough else null
                     ),
-                    color = if (item.status == CodeStatus.EXPIRED) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                            else MaterialTheme.colorScheme.onBackground
+                    color = if (item.status == CodeStatus.EXPIRED) MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                        alpha = 0.5f
+                    )
+                    else MaterialTheme.colorScheme.onBackground
                 )
                 Text(
-                    text = when(item.status) {
+                    text = when (item.status) {
                         CodeStatus.ACTIVE -> "GENERADO: ${item.time}"
                         CodeStatus.USED -> "VINCULADO: ${item.time}"
                         CodeStatus.EXPIRED -> "EXPIRÓ: ${item.time}"
@@ -430,8 +486,14 @@ fun MeseroBottomNavigation() {
                         Icon(
                             icon,
                             contentDescription = label,
-                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                            modifier = if (isSelected) Modifier.shadow(8.dp, CircleShape, spotColor = MaterialTheme.colorScheme.primary) else Modifier
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f
+                            ),
+                            modifier = if (isSelected) Modifier.shadow(
+                                8.dp,
+                                CircleShape,
+                                spotColor = MaterialTheme.colorScheme.primary
+                            ) else Modifier
                         )
                         Text(
                             label,
@@ -440,7 +502,9 @@ fun MeseroBottomNavigation() {
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 1.sp
                             ),
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.5f
+                            )
                         )
                     }
                 },
@@ -452,7 +516,16 @@ fun MeseroBottomNavigation() {
     }
 }
 
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.drawBehind
+@Preview(showBackground = true)
+@Composable
+fun B2_HomeMeseroScreenPreview() {
+
+    val meseroViewModel: MeseroViewModel = viewModel();
+    NeonBeatsTheme {
+        B2_HomeMeseroScreen(
+            meseroViewModel,
+            onNavigateToProfile = {},
+            onNavigateToRequests = {}
+        )
+    }
+}
