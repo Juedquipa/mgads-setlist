@@ -1,18 +1,60 @@
 package com.mgasd.neonbeatssetlits.ui.screens.mesero
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Chair
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PriorityHigh
+import androidx.compose.material.icons.filled.QueueMusic
+import androidx.compose.material.icons.filled.ReceiptLong
+import androidx.compose.material.icons.filled.RestaurantMenu
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -21,13 +63,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.AsyncImage
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.viewmodel.ActiveTable
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
 import com.mgasd.neonbeatssetlits.viewmodel.TableStatus
@@ -46,7 +89,9 @@ fun B4_MesasActivasScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Scanlines industrial overlay
-        Canvas(modifier = Modifier.fillMaxSize().alpha(0.05f)) {
+        Canvas(modifier = Modifier
+            .fillMaxSize()
+            .alpha(0.05f)) {
             val scanlineSpacing = 4.dp.toPx()
             for (y in 0 until size.height.toInt() step scanlineSpacing.toInt()) {
                 drawLine(
@@ -70,14 +115,21 @@ fun B4_MesasActivasScreen(
                     },
                     navigationIcon = {
                         IconButton(onClick = { /* Drawer */ }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.primary)
+                            Icon(
+                                Icons.Default.Menu,
+                                contentDescription = "Menu",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     },
                     actions = {
                         Surface(
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(2.dp),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                MaterialTheme.colorScheme.outlineVariant
+                            )
                         ) {
                             Text(
                                 "STAFF VIEW",
@@ -99,7 +151,11 @@ fun B4_MesasActivasScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary,
                     shape = CircleShape,
-                    modifier = Modifier.shadow(12.dp, CircleShape, spotColor = MaterialTheme.colorScheme.primary)
+                    modifier = Modifier.shadow(
+                        12.dp,
+                        CircleShape,
+                        spotColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
                 }
@@ -139,11 +195,17 @@ fun B4_MesasActivasScreen(
                         }
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            StatusBadge(label = "ACTIVE (${state.activeTablesCount})", color = MaterialTheme.colorScheme.tertiary)
-                            StatusBadge(label = "SESSION (${state.sessionTablesCount})", color = MaterialTheme.colorScheme.primary)
+                            StatusBadge(
+                                label = "ACTIVE (${state.activeTablesCount})",
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                            StatusBadge(
+                                label = "SESSION (${state.sessionTablesCount})",
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
-                    
+
                     Divider(
                         modifier = Modifier.padding(top = 16.dp),
                         color = MaterialTheme.colorScheme.outlineVariant,
@@ -155,8 +217,10 @@ fun B4_MesasActivasScreen(
                 items(state.tables) { table ->
                     TableCard(
                         table = table,
-                        onAction = { 
-                            if (table.status == TableStatus.CALLING) viewModel.onAcknowledgeTable(table.id)
+                        onAction = {
+                            if (table.status == TableStatus.CALLING) viewModel.onAcknowledgeTable(
+                                table.id
+                            )
                         }
                     )
                 }
@@ -179,7 +243,9 @@ fun StatusBadge(label: String, color: Color) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Box(modifier = Modifier.size(6.dp).background(color, CircleShape))
+            Box(modifier = Modifier
+                .size(6.dp)
+                .background(color, CircleShape))
             Text(
                 label,
                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
@@ -201,7 +267,7 @@ fun TableCard(
     }
 
     val glowColor = borderColor.copy(alpha = 0.4f)
-    
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -226,7 +292,10 @@ fun TableCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     Text(
                         table.id,
                         style = MaterialTheme.typography.displaySmall.copy(
@@ -235,11 +304,14 @@ fun TableCard(
                         ),
                         color = borderColor
                     )
-                    
+
                     Surface(
                         color = borderColor.copy(alpha = 0.15f),
                         shape = RoundedCornerShape(2.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor.copy(alpha = 0.4f))
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            borderColor.copy(alpha = 0.4f)
+                        )
                     ) {
                         Text(
                             table.statusLabel.uppercase(),
@@ -254,14 +326,16 @@ fun TableCard(
                     EqualizerAnimation()
                 } else {
                     Icon(
-                        imageVector = when(table.status) {
+                        imageVector = when (table.status) {
                             TableStatus.CALLING -> Icons.Default.NotificationsActive
                             TableStatus.EMPTY -> Icons.Default.Chair
                             else -> Icons.Default.PriorityHigh
                         },
                         contentDescription = null,
                         tint = borderColor,
-                        modifier = if (table.status == TableStatus.CALLING) Modifier.size(24.dp) else Modifier.size(24.dp)
+                        modifier = if (table.status == TableStatus.CALLING) Modifier.size(24.dp) else Modifier.size(
+                            24.dp
+                        )
                     )
                 }
             }
@@ -271,7 +345,11 @@ fun TableCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(80.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(2.dp))
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                            RoundedCornerShape(2.dp)
+                        )
                         .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
                     contentAlignment = Alignment.Center
                 ) {
@@ -282,7 +360,10 @@ fun TableCard(
                     )
                 }
             } else {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
                     TableMetric(
                         modifier = Modifier.weight(1f),
                         label = "ORDERS",
@@ -308,10 +389,13 @@ fun TableCard(
                     containerColor = if (table.status == TableStatus.EMPTY) Color.Transparent else borderColor,
                     contentColor = if (table.status == TableStatus.EMPTY) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimary
                 ),
-                border = if (table.status == TableStatus.EMPTY) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null
+                border = if (table.status == TableStatus.EMPTY) androidx.compose.foundation.BorderStroke(
+                    1.dp,
+                    MaterialTheme.colorScheme.outline
+                ) else null
             ) {
                 Text(
-                    text = when(table.status) {
+                    text = when (table.status) {
                         TableStatus.ACTIVE -> "VIEW ORDERS"
                         TableStatus.SESSION -> "MANAGE"
                         TableStatus.EMPTY -> "ASSIGN"
@@ -342,13 +426,37 @@ fun TableMetric(
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(14.dp)
+            )
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
-        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(value, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
-            Text(subLabel, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 4.dp))
+        Row(
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                value,
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+            Text(
+                subLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
         }
     }
 }
@@ -356,7 +464,7 @@ fun TableMetric(
 @Composable
 fun EqualizerAnimation() {
     val infiniteTransition = rememberInfiniteTransition(label = "equalizer")
-    
+
     Row(
         modifier = Modifier.height(24.dp),
         verticalAlignment = Alignment.Bottom,
@@ -375,7 +483,7 @@ fun EqualizerAnimation() {
                 ),
                 label = "bar_$index"
             )
-            
+
             Box(
                 modifier = Modifier
                     .width(4.dp)
@@ -390,7 +498,9 @@ fun EqualizerAnimation() {
 fun StaffBottomNavigation() {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.background,
-        modifier = Modifier.height(80.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(0.dp)),
+        modifier = Modifier
+            .height(80.dp)
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(0.dp)),
         tonalElevation = 0.dp
     ) {
         val items = listOf(
@@ -406,22 +516,46 @@ fun StaffBottomNavigation() {
                 selected = isSelected,
                 onClick = { /* Nav */ },
                 icon = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Icon(
-                            icon, 
+                            icon,
                             contentDescription = label,
-                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-                            modifier = if (isSelected) Modifier.shadow(8.dp, CircleShape, spotColor = MaterialTheme.colorScheme.primary) else Modifier
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.6f
+                            ),
+                            modifier = if (isSelected) Modifier.shadow(
+                                8.dp,
+                                CircleShape,
+                                spotColor = MaterialTheme.colorScheme.primary
+                            ) else Modifier
                         )
                         Text(
-                            label, 
+                            label,
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                                alpha = 0.6f
+                            )
                         )
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun B4_MesasActivasScreenPreview() {
+    val meseroViewModel: MeseroViewModel = viewModel();
+
+    NeonBeatsTheme {
+        B4_MesasActivasScreen(
+            meseroViewModel,
+            onNavigateBack = {}
+        )
     }
 }
