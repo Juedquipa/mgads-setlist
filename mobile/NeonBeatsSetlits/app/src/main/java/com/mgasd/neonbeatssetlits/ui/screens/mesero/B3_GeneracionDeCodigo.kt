@@ -18,6 +18,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontFamily
@@ -119,63 +120,82 @@ fun B3_GeneracionDeCodigoScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Área del Código Generado
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .border(1.dp, MaterialTheme.colorScheme.surfaceVariant)
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CornerAccents()
+            // Área del Código Generado (Solo se muestra si hay un código)
+            if (state.generatedCode.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CornerAccents()
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        "CÓDIGO DE ACCESO",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 2.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // QR Code Display
-                    QRCodeImage(
-                        content = state.generatedCode,
-                        modifier = Modifier.size(200.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = state.generatedCode,
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = 4.sp
-                        ),
-                        color = MaterialTheme.colorScheme.tertiary
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // Timer Circular Progresivo
-                    val progress = state.secondsRemaining.toFloat() / state.totalSeconds.toFloat()
-                    Box(contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(
-                            progress = { progress },
-                            modifier = Modifier.size(64.dp),
-                            color = MaterialTheme.colorScheme.tertiary,
-                            strokeWidth = 2.dp,
-                            trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                        )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "${state.secondsRemaining}s",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            "CÓDIGO DE ACCESO",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            letterSpacing = 2.sp
                         )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // QR Code Display
+                        QRCodeImage(
+                            content = state.generatedCode,
+                            modifier = Modifier.size(200.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = state.generatedCode,
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 4.sp
+                            ),
+                            color = MaterialTheme.colorScheme.tertiary
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        // Timer Circular Progresivo
+                        val progress = if (state.totalSeconds > 0) state.secondsRemaining.toFloat() / state.totalSeconds.toFloat() else 0f
+                        Box(contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                progress = { progress },
+                                modifier = Modifier.size(64.dp),
+                                color = MaterialTheme.colorScheme.tertiary,
+                                strokeWidth = 2.dp,
+                                trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                            )
+                            Text(
+                                "${state.secondsRemaining}s",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
+                }
+            } else {
+                // Placeholder o mensaje cuando no hay código
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
+                        .alpha(0.5f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "SELECCIONE UNA MESA Y\nGENERE UN CÓDIGO",
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
@@ -191,15 +211,16 @@ fun B3_GeneracionDeCodigoScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(64.dp),
+                    enabled = state.selectedTable != null,
                     shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
-                        contentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = if (state.generatedCode.isEmpty()) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                        contentColor = if (state.generatedCode.isEmpty()) Color.Black else MaterialTheme.colorScheme.onSurface
                     )
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("REGENERAR")
+                    Text(if (state.generatedCode.isEmpty()) "GENERAR" else "REGENERAR")
                 }
 
                 Button(
@@ -207,6 +228,7 @@ fun B3_GeneracionDeCodigoScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(64.dp),
+                    enabled = state.generatedCode.isNotEmpty(),
                     shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.tertiary,
@@ -235,7 +257,6 @@ fun B3_GeneracionDeCodigoScreen(
         }
     }
 }
-
 
 @Composable
 fun QRCodeImage(content: String, modifier: Modifier = Modifier) {
