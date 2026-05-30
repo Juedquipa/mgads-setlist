@@ -41,9 +41,14 @@ class MeseroViewModel : ViewModel() {
         
         viewModelScope.launch {
             try {
+                // El pin se envía como password según el spec de LoginRequest
                 val response = RetrofitClient.instance.login(
-                    LoginRequest(_uiState.value.username, _uiState.value.pin)
+                    LoginRequest(
+                        username = _uiState.value.username,
+                        password = _uiState.value.pin
+                    )
                 )
+
                 if (response.isSuccessful) {
                     _uiState.update { 
                         it.copy(
@@ -60,16 +65,20 @@ class MeseroViewModel : ViewModel() {
                     }
                 }
             } catch (e: Exception) {
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
-                        isLoading = false, 
-                        errorMessage = "Error de conexión" 
-                    ) 
+                        isLoading = false,
+                        errorMessage = "Error de conexión: ${e.message}"
+                    )
                 }
             }
         }
     }
     
+    fun onGenerateCodeClick() {
+        // Lógica para generar un nuevo código
+    }
+
     fun resetLoginState() {
         _uiState.update { MeseroLoginState() }
     }
