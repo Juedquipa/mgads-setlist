@@ -22,9 +22,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
 
 /**
@@ -314,5 +317,16 @@ fun CornerAccents() {
             drawLine(color, androidx.compose.ui.geometry.Offset(size.toPx(), size.toPx()), androidx.compose.ui.geometry.Offset(0f, size.toPx()), stroke.toPx())
             drawLine(color, androidx.compose.ui.geometry.Offset(size.toPx(), size.toPx()), androidx.compose.ui.geometry.Offset(size.toPx(), 0f), stroke.toPx())
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun B1_loginMeseroPreview() {
+
+    val meseroViewModel: MeseroViewModel = viewModel();
+    NeonBeatsTheme {
+        B1_LoginMeseroScreen(meseroViewModel,
+            onNavigateToDashboard = {})
     }
 }
