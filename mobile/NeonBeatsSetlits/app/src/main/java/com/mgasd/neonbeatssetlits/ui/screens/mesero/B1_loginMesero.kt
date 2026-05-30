@@ -30,6 +30,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+
 /**
  * Pantalla B1 - Login Mesero
  * Estética: Industrial Neon Underground
@@ -140,39 +145,51 @@ fun B1_LoginMeseroScreen(
                         }
 
                         // Botón de Acción
-                        Button(
-                            onClick = viewModel::onLoginClick,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(64.dp)
-                                .shadow(
-                                    elevation = 20.dp,
-                                    spotColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
-                                    ambientColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
-                                ),
-                            shape = RoundedCornerShape(2.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.tertiary,
-                                contentColor = Color.Black
-                            ),
-                            enabled = !uiState.isLoading
-                        ) {
-                            if (uiState.isLoading) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    color = Color.Black,
-                                    strokeWidth = 2.dp
+                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            uiState.errorMessage?.let {
+                                Text(
+                                    text = it,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                                 )
-                            } else {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                                ) {
-                                    Text(
-                                        text = "ENTRAR",
-                                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                            }
+                            
+                            Button(
+                                onClick = { viewModel.onLoginClick() },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(64.dp)
+                                    .shadow(
+                                        elevation = 20.dp,
+                                        spotColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f),
+                                        ambientColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.5f)
+                                    ),
+                                shape = RoundedCornerShape(2.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                    contentColor = Color.Black
+                                ),
+                                enabled = !uiState.isLoading
+                            ) {
+                                if (uiState.isLoading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = Color.Black,
+                                        strokeWidth = 2.dp
                                     )
-                                    Icon(Icons.Default.ArrowForward, contentDescription = null)
+                                } else {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        Text(
+                                            text = "ENTRAR",
+                                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                                        )
+                                        Icon(Icons.Default.ArrowForward, contentDescription = null)
+                                    }
                                 }
                             }
                         }
@@ -249,7 +266,15 @@ fun LabelWithIcon(icon: androidx.compose.ui.graphics.vector.ImageVector, label: 
 
 @Composable
 fun PinInputGrid(pin: String, onPinChange: (String) -> Unit) {
-    Box(contentAlignment = Alignment.Center) {
+    val focusRequester = remember { FocusRequester() }
+    
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.clickable(
+            interactionSource = remember { MutableInteractionSource() },
+            indication = null
+        ) { focusRequester.requestFocus() }
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -287,7 +312,8 @@ fun PinInputGrid(pin: String, onPinChange: (String) -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(64.dp)
-                .alpha(0f),
+                .alpha(0f)
+                .focusRequester(focusRequester),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             maxLines = 1
         )
