@@ -1,0 +1,8 @@
+isort
+black
+flake8
+django
+djangorestframework
+psycopg2-binary
+python-dotenv
+gunicorn
