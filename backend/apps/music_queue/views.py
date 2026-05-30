@@ -1,5 +1,4 @@
-import uuid
-
+from apps.venues.models import Table
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils.crypto import get_random_string
@@ -7,9 +6,13 @@ from rest_framework import permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import PinCode, PlaybackQueue, Request, Session
-from .serializers import (PinCodeSerializer, PlaybackQueueSerializer,
-                          RequestSerializer)
+from .models import PinCode, Request, Session
+from .permissions import HasSessionToken
+from .serializers import (
+    PinCodeSerializer,
+    RequestSerializer,
+    SessionSerializer,
+)
 
 
 def broadcast_queue_update(tenant_id):
@@ -32,9 +35,7 @@ class PinCodeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         code = get_random_string(6, allowed_chars="0123456789")
-        serializer.save(
-            tenant=self.request.user.tenant, created_by=self.request.user, code=code
-        )
+        serializer.save(tenant=self.request.user.tenant, created_by=self.request.user, code=code)
 
 
 class QueueViewSet(viewsets.ViewSet):
@@ -74,9 +75,7 @@ class ApprovalViewSet(viewsets.ViewSet):
         if not user.tenant:
             return Response([])
         # Similar to queue, returning pending requests
-        requests = Request.objects.filter(
-            tenant=user.tenant, status=Request.StatusChoices.PENDING
-        )
+        requests = Request.objects.filter(tenant=user.tenant, status=Request.StatusChoices.PENDING)
         return Response(RequestSerializer(requests, many=True).data)
 
     @action(detail=True, methods=["put"])
@@ -103,21 +102,13 @@ class ApprovalViewSet(viewsets.ViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-from apps.venues.models import Table
-
-from .permissions import HasSessionToken
-from .serializers import SessionSerializer
-
-
 class ClientSessionView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
         qr_token = request.data.get("qr_code")
         if not qr_token:
-            return Response(
-                {"detail": "qr_code is required"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "qr_code is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         table = Table.objects.filter(qr_code_token=qr_token, is_active=True).first()
         if not table:
@@ -139,18 +130,12 @@ class ClientPinCodeValidateView(views.APIView):
     def post(self, request):
         code = request.data.get("code")
         if not code:
-            return Response(
-                {"detail": "Code is required"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "Code is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         session = request.client_session
-        pin = PinCode.objects.filter(
-            code=code, tenant=session.tenant, is_used=False
-        ).first()
+        pin = PinCode.objects.filter(code=code, tenant=session.tenant, is_used=False).first()
         if not pin:
-            return Response(
-                {"detail": "Invalid or used PIN"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"detail": "Invalid or used PIN"}, status=status.HTTP_404_NOT_FOUND)
 
         pin.is_used = True
         pin.save()
@@ -173,9 +158,7 @@ class ClientRequestSongView(views.APIView):
     def post(self, request):
         session = request.client_session
         if session.credits_balance <= 0:
-            return Response(
-                {"detail": "Insufficient credits"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "Insufficient credits"}, status=status.HTTP_400_BAD_REQUEST)
 
         spotify_id = request.data.get("spotify_id")
         title = request.data.get("title")
@@ -213,6 +196,4 @@ class ClientRequestSongView(views.APIView):
 
         broadcast_queue_update(session.tenant.id)
 
-        return Response(
-            RequestSerializer(song_req).data, status=status.HTTP_201_CREATED
-        )
+        return Response(RequestSerializer(song_req).data, status=status.HTTP_201_CREATED)
