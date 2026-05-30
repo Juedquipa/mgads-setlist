@@ -14,17 +14,43 @@ data class MeseroLoginState(
     val errorMessage: String? = null
 )
 
+data class CodeHistoryItem(
+    val tableId: String,
+    val code: String,
+    val time: String,
+    val status: CodeStatus
+)
+
+enum class CodeStatus {
+    ACTIVE, USED, EXPIRED
+}
+
+data class MeseroHomeState(
+    val waiterName: String = "Roberto",
+    val shiftInfo: String = "Turno Noche • Sector B",
+    val tablesServed: Int = 12,
+    val averageRating: Float = 4.8f,
+    val ratingTrend: String = "+0.2",
+    val codeHistory: List<CodeHistoryItem> = listOf(
+        CodeHistoryItem("T12", "NB-8X2F-9A", "20:45", CodeStatus.ACTIVE),
+        CodeHistoryItem("T08", "NB-4M9K-2B", "19:30", CodeStatus.USED),
+        CodeHistoryItem("T05", "NB-1L5P-7C", "18:00", CodeStatus.EXPIRED)
+    )
+)
+
 class MeseroViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(MeseroLoginState())
     val uiState: StateFlow<MeseroLoginState> = _uiState.asStateFlow()
+
+    private val _homeState = MutableStateFlow(MeseroHomeState())
+    val homeState: StateFlow<MeseroHomeState> = _homeState.asStateFlow()
 
     fun onUsernameChange(newUsername: String) {
         _uiState.update { it.copy(username = newUsername) }
     }
 
     fun onPinChange(newPin: String) {
-        // Acepta solo hasta 4 dígitos
         if (newPin.length <= 4 && newPin.all { it.isDigit() }) {
             _uiState.update { it.copy(pin = newPin) }
         }
@@ -35,9 +61,7 @@ class MeseroViewModel : ViewModel() {
         
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         
-        // Simulación de login (en producción esto llamaría a un repository)
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            // Simulación simple: si el PIN tiene 4 dígitos, autorizamos
             if (_uiState.value.pin.length == 4 && _uiState.value.username.isNotEmpty()) {
                 _uiState.update { 
                     it.copy(
@@ -56,6 +80,10 @@ class MeseroViewModel : ViewModel() {
         }, 1500)
     }
     
+    fun onGenerateCodeClick() {
+        // Lógica para generar un nuevo código
+    }
+
     fun resetLoginState() {
         _uiState.update { MeseroLoginState() }
     }
