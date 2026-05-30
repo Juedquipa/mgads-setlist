@@ -20,6 +20,28 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "tenant", "role"]
 
 
+class ErrorResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
+class LoginRequestSerializer(serializers.Serializer):
+    username = serializers.CharField(help_text="Account username.")
+    password = serializers.CharField(help_text="Account password.", write_only=True)
+
+
+class TokenPairResponseSerializer(serializers.Serializer):
+    refresh = serializers.CharField(help_text="JWT refresh token.")
+    access = serializers.CharField(help_text="JWT access token.")
+
+
+class TokenRefreshRequestSerializer(serializers.Serializer):
+    refresh = serializers.CharField(help_text="JWT refresh token.")
+
+
+class TokenRefreshResponseSerializer(serializers.Serializer):
+    access = serializers.CharField(help_text="New JWT access token.")
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):

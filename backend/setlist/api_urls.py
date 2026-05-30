@@ -6,12 +6,15 @@ from apps.music_queue.views import (
     PinCodeViewSet,
     QueueViewSet,
 )
-from apps.users.views import CustomTokenObtainPairView, WaiterViewSet
+from apps.users.views import (
+    CustomTokenObtainPairView,
+    CustomTokenRefreshView,
+    WaiterViewSet,
+)
 from apps.venues.views import TableViewSet
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
 
 router = DefaultRouter()
 router.register(r"waiters", WaiterViewSet, basename="waiter")
@@ -27,7 +30,7 @@ approval_reject = ApprovalViewSet.as_view({"put": "reject"})
 urlpatterns = [
     # Auth
     path("auth/login/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("auth/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
     # Client specific endpoints
     path("client/session/", ClientSessionView.as_view(), name="client-session"),
     path(
