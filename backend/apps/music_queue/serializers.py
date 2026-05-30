@@ -3,6 +3,32 @@ from rest_framework import serializers
 from .models import PinCode, PlaybackQueue, Request, Session, Track
 
 
+class ErrorResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+
+class ClientSessionRequestSerializer(serializers.Serializer):
+    qr_code = serializers.CharField(help_text="QR code token printed on the table.")
+
+
+class ClientPinCodeValidateRequestSerializer(serializers.Serializer):
+    code = serializers.CharField(help_text="PIN code provided by the venue.")
+
+
+class ClientPinCodeValidateResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    credits_added = serializers.IntegerField()
+    new_balance = serializers.IntegerField()
+
+
+class ClientRequestSongRequestSerializer(serializers.Serializer):
+    spotify_id = serializers.CharField(help_text="Spotify track identifier.")
+    title = serializers.CharField(help_text="Track title.")
+    artist = serializers.CharField(help_text="Track artist.")
+    duration_ms = serializers.IntegerField(required=False, default=0)
+    album_art_url = serializers.CharField(required=False, allow_blank=True, default="")
+
+
 class PinCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PinCode

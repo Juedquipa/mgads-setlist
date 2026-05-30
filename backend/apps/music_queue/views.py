@@ -2,6 +2,7 @@ from apps.venues.models import Table
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils.crypto import get_random_string
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,6 +10,11 @@ from rest_framework.response import Response
 from .models import PinCode, Request, Session
 from .permissions import HasSessionToken
 from .serializers import (
+    ClientPinCodeValidateRequestSerializer,
+    ClientPinCodeValidateResponseSerializer,
+    ClientRequestSongRequestSerializer,
+    ClientSessionRequestSerializer,
+    ErrorResponseSerializer,
     PinCodeSerializer,
     RequestSerializer,
     SessionSerializer,
@@ -105,6 +111,20 @@ class ApprovalViewSet(viewsets.ViewSet):
 class ClientSessionView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
+    @extend_schema(
+        operation_id="client_session_create",
+        summary="Create a client session",
+        description=(
+            "Validates an active table QR code and creates a temporary client session "
+            "for the table. The returned token is required by the client-only endpoints."
+        ),
+        request=ClientSessionRequestSerializer,
+        responses={
+            200: SessionSerializer,
+            400: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        },
+    )
     def post(self, request):
         qr_token = request.data.get("qr_code")
         if not qr_token:
@@ -127,6 +147,29 @@ class ClientSessionView(views.APIView):
 class ClientPinCodeValidateView(views.APIView):
     permission_classes = [HasSessionToken]
 
+    @extend_schema(
+        summary="Validate a PIN code",
+        description=(
+            "Applies an unused venue PIN code to the current client session and adds its "
+            "credits to the session balance. Requires the X-Session-Token header."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="X-Session-Token",
+                location=OpenApiParameter.HEADER,
+                required=True,
+                type=str,
+                description="Session token returned by the client session creation endpoint.",
+            )
+        ],
+        request=ClientPinCodeValidateRequestSerializer,
+        responses={
+            200: ClientPinCodeValidateResponseSerializer,
+            400: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        },
+    )
     def post(self, request):
         code = request.data.get("code")
         if not code:
@@ -155,6 +198,28 @@ class ClientPinCodeValidateView(views.APIView):
 class ClientRequestSongView(views.APIView):
     permission_classes = [HasSessionToken]
 
+    @extend_schema(
+        summary="Request a song",
+        description=(
+            "Creates a pending song request for the current client session and consumes one "
+            "credit from the session balance. Requires the X-Session-Token header."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="X-Session-Token",
+                location=OpenApiParameter.HEADER,
+                required=True,
+                type=str,
+                description="Session token returned by the client session creation endpoint.",
+            )
+        ],
+        request=ClientRequestSongRequestSerializer,
+        responses={
+            201: RequestSerializer,
+            400: ErrorResponseSerializer,
+            403: ErrorResponseSerializer,
+        },
+    )
     def post(self, request):
         session = request.client_session
         if session.credits_balance <= 0:

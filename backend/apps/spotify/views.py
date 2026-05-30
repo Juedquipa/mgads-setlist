@@ -10,9 +10,17 @@ class SpotifySearchView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(
+        summary="Search Spotify tracks",
+        description=(
+            "Searches the tenant's configured Spotify catalog for tracks that match "
+            "the given query."
+        ),
         parameters=[
             OpenApiParameter(
-                name="q", description="Search query", required=True, type=str
+                name="q",
+                description="Free-text search query.",
+                required=True,
+                type=str,
             ),
         ],
         responses={200: dict, 400: dict, 502: dict},
@@ -38,15 +46,19 @@ class SpotifySearchView(views.APIView):
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except requests.RequestException:
-            return Response(
-                {"detail": "Spotify API error."}, status=status.HTTP_502_BAD_GATEWAY
-            )
+            return Response({"detail": "Spotify API error."}, status=status.HTTP_502_BAD_GATEWAY)
 
 
 class SpotifyTrackView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    @extend_schema(responses={200: dict, 400: dict, 502: dict})
+    @extend_schema(
+        summary="Get a Spotify track",
+        description=(
+            "Fetches a single track by Spotify ID from the tenant's configured " "Spotify account."
+        ),
+        responses={200: dict, 400: dict, 502: dict},
+    )
     def get(self, request, track_id):
         user = request.user
         if not hasattr(user, "tenant") or not user.tenant:
@@ -61,6 +73,4 @@ class SpotifyTrackView(views.APIView):
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except requests.RequestException:
-            return Response(
-                {"detail": "Spotify API error."}, status=status.HTTP_502_BAD_GATEWAY
-            )
+            return Response({"detail": "Spotify API error."}, status=status.HTTP_502_BAD_GATEWAY)
