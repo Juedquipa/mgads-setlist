@@ -33,7 +33,14 @@ import com.mgasd.neonbeatssetlits.viewmodel.TrackInfo
 
 @Composable
 fun HomeClienteScreen(
-    viewModel: ClienteViewModel
+    viewModel: ClienteViewModel,
+    onSearchTrack: () -> Unit,
+    onHomeClick: () -> Unit,
+    onRequestsClick: () -> Unit,
+    onMenuClick: () -> Unit = {},
+    onBillsClick: () -> Unit,
+    onProfileClick: () -> Unit = {},
+    onQueueClick: () -> Unit
 ) {
     val mesaNumero by viewModel.mesaNumero.collectAsStateWithLifecycle()
     val currentTrack by viewModel.currentTrack.collectAsStateWithLifecycle()
@@ -47,12 +54,13 @@ fun HomeClienteScreen(
         availableCredits = availableCredits,
         maxCredits = maxCredits,
         nextTrack = nextTrack,
-        onSearchTrack = { viewModel.onSearchTrackClick() },
-        onHomeClick = { viewModel.onHomeClick() },
-        onRequestsClick = { viewModel.onRequestsClick() },
-        onMenuClick = { viewModel.onMenuClick() },
-        onBillsClick = { viewModel.onBillsClick() },
-        onProfileClick = { viewModel.onProfileClick() }
+        onSearchTrack = onSearchTrack,
+        onHomeClick = onHomeClick,
+        onRequestsClick = onRequestsClick,
+        onMenuClick = onMenuClick,
+        onBillsClick = onBillsClick,
+        onProfileClick = onProfileClick,
+        onQueueClick = onQueueClick
     )
 }
 
@@ -68,7 +76,8 @@ fun HomeClienteContent(
     onRequestsClick: () -> Unit,
     onMenuClick: () -> Unit,
     onBillsClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onQueueClick: () -> Unit
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -98,7 +107,7 @@ fun HomeClienteContent(
             ) {
                 // Now Playing Card
                 item {
-                    NowPlayingCard(track = currentTrack)
+                    NowPlayingCard(track = currentTrack, onClick = onQueueClick)
                 }
 
                 // Credits Section
@@ -117,7 +126,7 @@ fun HomeClienteContent(
                             onClick = onSearchTrack
                         )
                         NextTrackCard(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1f).clickable { onQueueClick() },
                             trackName = nextTrack.first,
                             requestedBy = nextTrack.second
                         )
@@ -169,11 +178,12 @@ fun HomeTopBar(mesaNumero: String) {
 }
 
 @Composable
-fun NowPlayingCard(track: TrackInfo) {
+fun NowPlayingCard(track: TrackInfo, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp),
+            .height(180.dp)
+            .clickable(onClick = onClick),
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -288,7 +298,6 @@ fun CreditsSection(available: Int, max: Int) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(width = 1.dp, color = Color.Transparent) // placeholder for bottom border
                 .padding(bottom = 8.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Bottom
@@ -305,7 +314,6 @@ fun CreditsSection(available: Int, max: Int) {
             )
         }
         
-        // Horizontal line simulated since Compose doesn't have border-bottom easily
         Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.outlineVariant))
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -524,7 +532,8 @@ fun HomeClientePreview() {
             onRequestsClick = {},
             onMenuClick = {},
             onBillsClick = {},
-            onProfileClick = {}
+            onProfileClick = {},
+            onQueueClick = {}
         )
     }
 }

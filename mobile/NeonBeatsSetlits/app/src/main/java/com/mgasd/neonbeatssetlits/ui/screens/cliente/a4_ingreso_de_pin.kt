@@ -35,7 +35,8 @@ import com.mgasd.neonbeatssetlits.viewmodel.ClienteViewModel
 @Composable
 fun IngresoPinScreen(
     viewModel: ClienteViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onPinValidated: () -> Unit
 ) {
     val pinCode by viewModel.pinCode.collectAsStateWithLifecycle()
 
@@ -44,7 +45,10 @@ fun IngresoPinScreen(
         onBack = onBack,
         onNumberClick = { viewModel.onPinNumberClick(it) },
         onDeleteClick = { viewModel.onPinDeleteClick() },
-        onSubmit = { viewModel.onPinSubmitClick() }
+        onSubmit = { 
+            viewModel.onPinSubmitClick()
+            onPinValidated() // In real app, trigger this on success flow
+        }
     )
 }
 

@@ -37,7 +37,10 @@ import com.mgasd.neonbeatssetlits.viewmodel.OrderStatus
 
 @Composable
 fun MiMesaScreen(
-    viewModel: ClienteViewModel
+    viewModel: ClienteViewModel,
+    onHomeClick: () -> Unit,
+    onRequestsClick: () -> Unit,
+    onBillsClick: () -> Unit
 ) {
     val mesaNumero by viewModel.mesaNumero.collectAsStateWithLifecycle()
     val ordersCount by viewModel.ordersCount.collectAsStateWithLifecycle()
@@ -53,10 +56,10 @@ fun MiMesaScreen(
         orderHistory = orderHistory,
         onReloadCredits = { viewModel.onReloadCreditsClick() },
         onNewOrderCode = { viewModel.onEnterOrderCodeClick() },
-        onHomeClick = { viewModel.onHomeClick() },
-        onRequestsClick = { viewModel.onRequestsClick() },
+        onHomeClick = onHomeClick,
+        onRequestsClick = onRequestsClick,
         onMenuClick = { viewModel.onMenuClick() },
-        onBillsClick = { viewModel.onBillsClick() },
+        onBillsClick = onBillsClick,
         onProfileClick = { viewModel.onProfileClick() }
     )
 }

@@ -35,7 +35,10 @@ import com.mgasd.neonbeatssetlits.viewmodel.UserRequest
 
 @Composable
 fun MisSolicitudesScreen(
-    viewModel: ClienteViewModel
+    viewModel: ClienteViewModel,
+    onHomeClick: () -> Unit,
+    onRequestsClick: () -> Unit,
+    onBillsClick: () -> Unit
 ) {
     val mesaNumero by viewModel.mesaNumero.collectAsStateWithLifecycle()
     val usedCredits by viewModel.usedCredits.collectAsStateWithLifecycle()
@@ -47,10 +50,10 @@ fun MisSolicitudesScreen(
         usedCredits = usedCredits,
         totalCredits = totalCredits,
         userRequests = userRequests,
-        onHomeClick = { viewModel.onHomeClick() },
-        onRequestsClick = { viewModel.onRequestsClick() },
+        onHomeClick = onHomeClick,
+        onRequestsClick = onRequestsClick,
         onMenuClick = { viewModel.onMenuClick() },
-        onBillsClick = { viewModel.onBillsClick() },
+        onBillsClick = onBillsClick,
         onProfileClick = { viewModel.onProfileClick() }
     )
 }

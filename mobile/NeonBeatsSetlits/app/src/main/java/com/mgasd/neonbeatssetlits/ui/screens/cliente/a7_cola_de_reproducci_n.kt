@@ -34,7 +34,10 @@ import com.mgasd.neonbeatssetlits.viewmodel.TrackInfo
 
 @Composable
 fun ColaReproduccionScreen(
-    viewModel: ClienteViewModel
+    viewModel: ClienteViewModel,
+    onHomeClick: () -> Unit,
+    onRequestsClick: () -> Unit,
+    onBillsClick: () -> Unit
 ) {
     val mesaNumero by viewModel.mesaNumero.collectAsStateWithLifecycle()
     val currentTrack by viewModel.currentTrack.collectAsStateWithLifecycle()
@@ -44,10 +47,10 @@ fun ColaReproduccionScreen(
         mesaNumero = mesaNumero,
         currentTrack = currentTrack,
         playQueue = playQueue,
-        onHomeClick = { viewModel.onHomeClick() },
-        onRequestsClick = { viewModel.onRequestsClick() },
+        onHomeClick = onHomeClick,
+        onRequestsClick = onRequestsClick,
         onMenuClick = { viewModel.onMenuClick() },
-        onBillsClick = { viewModel.onBillsClick() },
+        onBillsClick = onBillsClick,
         onProfileClick = { viewModel.onProfileClick() }
     )
 }

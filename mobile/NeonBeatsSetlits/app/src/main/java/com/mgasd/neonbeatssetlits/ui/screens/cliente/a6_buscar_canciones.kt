@@ -36,7 +36,10 @@ import com.mgasd.neonbeatssetlits.viewmodel.SongItem
 
 @Composable
 fun BuscarCancionesScreen(
-    viewModel: ClienteViewModel
+    viewModel: ClienteViewModel,
+    onHomeClick: () -> Unit,
+    onRequestsClick: () -> Unit,
+    onBillsClick: () -> Unit
 ) {
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val selectedTab by viewModel.selectedSearchTab.collectAsStateWithLifecycle()
@@ -53,10 +56,10 @@ fun BuscarCancionesScreen(
         onSearchQueryChange = { viewModel.onSearchQueryChange(it) },
         onTabChange = { viewModel.onSearchTabChange(it) },
         onRequestSong = { viewModel.onRequestSong(it) },
-        onHomeClick = { viewModel.onHomeClick() },
-        onRequestsClick = { viewModel.onRequestsClick() },
+        onHomeClick = onHomeClick,
+        onRequestsClick = onRequestsClick,
         onMenuClick = { viewModel.onMenuClick() },
-        onBillsClick = { viewModel.onBillsClick() },
+        onBillsClick = onBillsClick,
         onProfileClick = { viewModel.onProfileClick() }
     )
 }

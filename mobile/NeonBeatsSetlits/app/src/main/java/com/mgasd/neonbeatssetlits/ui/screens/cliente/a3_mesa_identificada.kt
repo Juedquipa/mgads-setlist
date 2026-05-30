@@ -29,14 +29,16 @@ import com.mgasd.neonbeatssetlits.viewmodel.ClienteViewModel
 
 @Composable
 fun MesaIdentificadaScreen(
-    viewModel: ClienteViewModel
+    viewModel: ClienteViewModel,
+    onEnterOrderCode: () -> Unit,
+    onViewQueue: () -> Unit
 ) {
     val mesaNumero by viewModel.mesaNumero.collectAsStateWithLifecycle()
 
     MesaIdentificadaContent(
         mesaNumero = mesaNumero,
-        onEnterOrderCode = { viewModel.onEnterOrderCodeClick() },
-        onViewQueue = { viewModel.onViewQueueClick() }
+        onEnterOrderCode = onEnterOrderCode,
+        onViewQueue = onViewQueue
     )
 }
 

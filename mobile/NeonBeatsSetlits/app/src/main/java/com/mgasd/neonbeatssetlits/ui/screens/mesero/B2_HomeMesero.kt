@@ -45,7 +45,8 @@ import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
 fun B2_HomeMeseroScreen(
     viewModel: MeseroViewModel,
     onNavigateToProfile: () -> Unit,
-    onNavigateToRequests: () -> Unit
+    onNavigateToRequests: () -> Unit,
+    onNavigateToGenerateCode: () -> Unit
 ) {
     val homeState by viewModel.homeState.collectAsStateWithLifecycle()
 
@@ -131,7 +132,7 @@ fun B2_HomeMeseroScreen(
                 // Botón Principal Generar Código
                 item {
                     Button(
-                        onClick = viewModel::onGenerateCodeClick,
+                        onClick = onNavigateToGenerateCode,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(120.dp)
@@ -489,7 +490,8 @@ fun B2_HomeMeseroScreenPreview() {
         B2_HomeMeseroScreen(
             meseroViewModel,
             onNavigateToProfile = {},
-            onNavigateToRequests = {}
+            onNavigateToRequests = {},
+            onNavigateToGenerateCode = {}
         )
     }
 }
