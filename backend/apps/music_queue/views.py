@@ -2,7 +2,7 @@ from apps.venues.models import Table
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.utils.crypto import get_random_string
-from drf_spectacular.utils import OpenApiParameter, extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import permissions, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -29,6 +29,45 @@ def broadcast_queue_update(tenant_id):
     )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List PIN codes",
+        description=("Returns the PIN codes that belong to the authenticated user's tenant."),
+        responses=PinCodeSerializer(many=True),
+    ),
+    retrieve=extend_schema(
+        summary="Get a PIN code",
+        description="Returns a single PIN code from the authenticated user's tenant.",
+        responses=PinCodeSerializer,
+    ),
+    create=extend_schema(
+        summary="Create a PIN code",
+        description=(
+            "Creates a new tenant-bound PIN code and generates the code value automatically."
+        ),
+        request=PinCodeSerializer,
+        responses=PinCodeSerializer,
+    ),
+    update=extend_schema(
+        summary="Update a PIN code",
+        description="Updates an existing PIN code in the authenticated user's tenant.",
+        request=PinCodeSerializer,
+        responses=PinCodeSerializer,
+    ),
+    partial_update=extend_schema(
+        summary="Partially update a PIN code",
+        description=(
+            "Updates one or more fields on a PIN code in the authenticated user's tenant."
+        ),
+        request=PinCodeSerializer,
+        responses=PinCodeSerializer,
+    ),
+    destroy=extend_schema(
+        summary="Delete a PIN code",
+        description="Deletes a PIN code from the authenticated user's tenant.",
+        responses={204: None},
+    ),
+)
 class PinCodeViewSet(viewsets.ModelViewSet):
     serializer_class = PinCodeSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -44,6 +83,24 @@ class PinCodeViewSet(viewsets.ModelViewSet):
         serializer.save(tenant=self.request.user.tenant, created_by=self.request.user, code=code)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List pending queue items",
+        description=(
+            "Returns the pending song requests for the authenticated user's tenant, "
+            "ordered by request time."
+        ),
+        responses=RequestSerializer(many=True),
+    ),
+    clear=extend_schema(
+        summary="Clear the pending queue",
+        description=(
+            "Deletes all pending song requests for the authenticated user's tenant. "
+            "This action is restricted to ADMIN users."
+        ),
+        responses={204: None, 403: ErrorResponseSerializer},
+    ),
+)
 class QueueViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -55,7 +112,7 @@ class QueueViewSet(viewsets.ViewSet):
         # In a real app we might paginate the requests queue
         requests = Request.objects.filter(
             tenant=user.tenant, status=Request.StatusChoices.PENDING
-        ).order_add("requested_at")
+        ).order_by("requested_at")
         serializer = RequestSerializer(requests, many=True)
         return Response(serializer.data)
 
@@ -73,6 +130,16 @@ class QueueViewSet(viewsets.ViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="List pending approvals",
+        description=(
+            "Returns the pending song requests that can be approved or rejected for the "
+            "authenticated user's tenant."
+        ),
+        responses=RequestSerializer(many=True),
+    ),
+)
 class ApprovalViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -84,6 +151,14 @@ class ApprovalViewSet(viewsets.ViewSet):
         requests = Request.objects.filter(tenant=user.tenant, status=Request.StatusChoices.PENDING)
         return Response(RequestSerializer(requests, many=True).data)
 
+    @extend_schema(
+        summary="Approve a request",
+        description=(
+            "Marks a pending request as playing and broadcasts the queue update for the "
+            "current tenant."
+        ),
+        responses={200: RequestSerializer, 404: ErrorResponseSerializer},
+    )
     @action(detail=True, methods=["put"])
     def approve(self, request, pk=None):
         try:
@@ -95,6 +170,14 @@ class ApprovalViewSet(viewsets.ViewSet):
         except Request.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    @extend_schema(
+        summary="Reject a request",
+        description=(
+            "Marks a pending request as skipped and broadcasts the queue update for the "
+            "current tenant."
+        ),
+        responses={200: RequestSerializer, 404: ErrorResponseSerializer},
+    )
     @action(detail=True, methods=["put"])
     def reject(self, request, pk=None):
         try:

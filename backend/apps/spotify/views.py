@@ -1,4 +1,5 @@
 import requests
+from apps.users.serializers import ErrorResponseSerializer
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, status, views
 from rest_framework.response import Response
@@ -23,7 +24,7 @@ class SpotifySearchView(views.APIView):
                 type=str,
             ),
         ],
-        responses={200: dict, 400: dict, 502: dict},
+        responses={200: dict, 400: ErrorResponseSerializer, 502: ErrorResponseSerializer},
     )
     def get(self, request):
         user = request.user
@@ -57,7 +58,7 @@ class SpotifyTrackView(views.APIView):
         description=(
             "Fetches a single track by Spotify ID from the tenant's configured " "Spotify account."
         ),
-        responses={200: dict, 400: dict, 502: dict},
+        responses={200: dict, 400: ErrorResponseSerializer, 502: ErrorResponseSerializer},
     )
     def get(self, request, track_id):
         user = request.user
