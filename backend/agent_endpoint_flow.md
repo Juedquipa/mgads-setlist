@@ -15,8 +15,10 @@ This document describes the main backend API flow exposed by the project and how
 
 ### `POST /api/auth/login/`
 
-- Accepts username and password.
+- Accepts `username` plus either `pin` or `password`.
 - Returns a refresh token and an access token.
+- If `pin` is provided, the backend authenticates against the user's persistent 4-digit staff PIN for that username.
+- If `password` is provided, the backend uses the standard Django password authentication flow for that username.
 - The custom token payload includes user role and tenant information.
 
 ### `POST /api/staff/login/`

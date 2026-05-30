@@ -1,5 +1,10 @@
 from django.contrib.auth import authenticate, get_user_model
-from drf_spectacular.utils import OpenApiExample, extend_schema, extend_schema_view
+from drf_spectacular.utils import (
+    OpenApiExample,
+    PolymorphicProxySerializer,
+    extend_schema,
+    extend_schema_view,
+)
 from rest_framework import permissions, status, views, viewsets
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -7,8 +12,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import (
     CustomTokenObtainPairSerializer,
     ErrorResponseSerializer,
-    LoginRequestSerializer,
-    StaffLoginRequestSerializer,
+    StaffPasswordLoginRequestSerializer,
+    StaffPinLoginRequestSerializer,
     TokenPairResponseSerializer,
     TokenRefreshRequestSerializer,
     TokenRefreshResponseSerializer,
@@ -18,34 +23,81 @@ from .serializers import (
 User = get_user_model()
 
 
+def _issue_staff_token_pair(user):
+    refresh = CustomTokenObtainPairSerializer.get_token(user)
+    return Response({"refresh": str(refresh), "access": str(refresh.access_token)})
+
+
+def _authenticate_staff_login(request):
+    username = request.data.get("username")
+    pin = request.data.get("pin")
+    password = request.data.get("password")
+
+    if not username:
+        return None, Response(
+            {"detail": "Username is required"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    has_pin = bool(pin)
+    has_password = bool(password)
+
+    if has_pin == has_password:
+        return None, Response(
+            {"detail": "Provide either pin or password, not both"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if pin:
+        user = User.objects.filter(
+            username=username,
+            staff_pin=pin,
+            is_active=True,
+            role__in=[User.RoleChoices.ADMIN, User.RoleChoices.WAITER],
+        ).first()
+        if not user:
+            return None, Response(
+                {"detail": "Invalid PIN"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        return user, None
+
+    user = authenticate(request, username=username, password=password)
+    if (
+        not user
+        or not user.is_active
+        or user.role
+        not in [
+            User.RoleChoices.ADMIN,
+            User.RoleChoices.WAITER,
+        ]
+    ):
+        return None, Response(
+            {"detail": "Invalid credentials"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    return user, None
+
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     @extend_schema(
-        summary="Log in and get JWT tokens",
-        description=(
-            "Authenticates a user with username and password and returns a refresh token "
-            "plus a short-lived access token. The access token includes custom role and "
-            "tenant claims."
-        ),
-        request=LoginRequestSerializer,
-        responses={200: TokenPairResponseSerializer, 401: ErrorResponseSerializer},
-    )
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
-
-
-class StaffPinLoginView(views.APIView):
-    permission_classes = [permissions.AllowAny]
-
-    @extend_schema(
-        summary="Staff log in with username plus PIN or password",
+        summary="Log in with username plus PIN or password",
         description=(
             "Authenticates a staff user with username plus either a persistent staff PIN "
             "or a password, then returns a refresh token plus a short-lived access token. "
             "The access token includes custom role and tenant claims."
         ),
-        request=StaffLoginRequestSerializer,
+        request=PolymorphicProxySerializer(
+            component_name="StaffLoginRequest",
+            serializers=[
+                StaffPinLoginRequestSerializer,
+                StaffPasswordLoginRequestSerializer,
+            ],
+            resource_type_field_name=None,
+        ),
         examples=[
             OpenApiExample(
                 "Staff PIN login",
@@ -61,59 +113,38 @@ class StaffPinLoginView(views.APIView):
         responses={200: TokenPairResponseSerializer, 401: ErrorResponseSerializer},
     )
     def post(self, request, *args, **kwargs):
-        username = request.data.get("username")
-        pin = request.data.get("pin")
-        password = request.data.get("password")
+        user, error_response = _authenticate_staff_login(request)
+        if error_response:
+            return error_response
 
-        if not username:
-            return Response(
-                {"detail": "Username is required"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        return _issue_staff_token_pair(user)
 
-        has_pin = bool(pin)
-        has_password = bool(password)
 
-        if has_pin == has_password:
-            return Response(
-                {"detail": "Provide either pin or password, not both"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+class StaffPinLoginView(views.APIView):
+    permission_classes = [permissions.AllowAny]
 
-        if pin:
-            user = User.objects.filter(
-                username=username,
-                staff_pin=pin,
-                is_active=True,
-                role__in=[User.RoleChoices.ADMIN, User.RoleChoices.WAITER],
-            ).first()
-            if not user:
-                return Response(
-                    {"detail": "Invalid PIN"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-        else:
-            user = authenticate(
-                request,
-                username=username,
-                password=password,
-            )
-            if (
-                not user
-                or not user.is_active
-                or user.role
-                not in [
-                    User.RoleChoices.ADMIN,
-                    User.RoleChoices.WAITER,
-                ]
-            ):
-                return Response(
-                    {"detail": "Invalid credentials"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
+    @extend_schema(
+        summary="Staff login alias",
+        description=(
+            "Alias for the main login flow so the staff-facing route exposes the same "
+            "request bodies and authentication behavior."
+        ),
+        request=PolymorphicProxySerializer(
+            component_name="StaffLoginRequest",
+            serializers=[
+                StaffPinLoginRequestSerializer,
+                StaffPasswordLoginRequestSerializer,
+            ],
+            resource_type_field_name=None,
+        ),
+        responses={200: TokenPairResponseSerializer, 401: ErrorResponseSerializer},
+    )
+    def post(self, request, *args, **kwargs):
+        user, error_response = _authenticate_staff_login(request)
+        if error_response:
+            return error_response
 
-        refresh = CustomTokenObtainPairSerializer.get_token(user)
-        return Response({"refresh": str(refresh), "access": str(refresh.access_token)})
+        return _issue_staff_token_pair(user)
 
 
 class CustomTokenRefreshView(TokenRefreshView):

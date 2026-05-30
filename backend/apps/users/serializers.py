@@ -33,7 +33,16 @@ class LoginRequestSerializer(serializers.Serializer):
 
 
 class StaffPinLoginRequestSerializer(serializers.Serializer):
-    pin = serializers.CharField(help_text="Staff login PIN.")
+    username = serializers.CharField(help_text="Staff username.")
+    pin = serializers.CharField(help_text="Persistent 4-digit staff PIN.")
+
+
+class StaffPasswordLoginRequestSerializer(serializers.Serializer):
+    username = serializers.CharField(help_text="Staff username.")
+    password = serializers.CharField(
+        help_text="Staff password.",
+        write_only=True,
+    )
 
 
 class StaffLoginRequestSerializer(serializers.Serializer):
