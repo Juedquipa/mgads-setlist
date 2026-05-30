@@ -15,6 +15,10 @@ class ClientPinCodeValidateRequestSerializer(serializers.Serializer):
     code = serializers.CharField(help_text="PIN code provided by the venue.")
 
 
+class ClientPinLoginRequestSerializer(serializers.Serializer):
+    code = serializers.CharField(help_text="PIN code provided by the venue.")
+
+
 class ClientPinCodeValidateResponseSerializer(serializers.Serializer):
     detail = serializers.CharField()
     credits_added = serializers.IntegerField()

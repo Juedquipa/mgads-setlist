@@ -1,6 +1,7 @@
 from apps.venues.models import Table
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import permissions, status, views, viewsets
@@ -12,6 +13,7 @@ from .permissions import HasSessionToken
 from .serializers import (
     ClientPinCodeValidateRequestSerializer,
     ClientPinCodeValidateResponseSerializer,
+    ClientPinLoginRequestSerializer,
     ClientRequestSongRequestSerializer,
     ClientSessionRequestSerializer,
     ErrorResponseSerializer,
@@ -225,6 +227,45 @@ class ClientSessionView(views.APIView):
             tenant=table.tenant, table=table, token=session_token, credits_balance=0
         )
         return Response(SessionSerializer(session).data)
+
+
+class ClientPinLoginView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        summary="Log in with a PIN code",
+        description=(
+            "Consumes a valid unused PIN code, creates a client session for the PIN's tenant, "
+            "and seeds the session with the PIN credits. This is the PIN-based login flow for "
+            "clients that do not start from a table QR code."
+        ),
+        request=ClientPinLoginRequestSerializer,
+        responses={
+            201: SessionSerializer,
+            400: ErrorResponseSerializer,
+            404: ErrorResponseSerializer,
+        },
+    )
+    def post(self, request):
+        code = request.data.get("code")
+        if not code:
+            return Response({"detail": "Code is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        pin = PinCode.objects.filter(code=code, is_used=False).first()
+        if not pin:
+            return Response({"detail": "Invalid or used PIN"}, status=status.HTTP_404_NOT_FOUND)
+
+        pin.is_used = True
+        pin.used_at = timezone.now()
+        pin.save(update_fields=["is_used", "used_at"])
+
+        session = Session.objects.create(
+            tenant=pin.tenant,
+            table=pin.table,
+            token=get_random_string(64),
+            credits_balance=pin.credits,
+        )
+        return Response(SessionSerializer(session).data, status=status.HTTP_201_CREATED)
 
 
 class ClientPinCodeValidateView(views.APIView):

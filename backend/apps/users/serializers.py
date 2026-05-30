@@ -6,6 +6,8 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    staff_pin = serializers.CharField(read_only=True)
+
     class Meta:
         model = User
         fields = [
@@ -14,10 +16,11 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "staff_pin",
             "role",
             "tenant",
         ]
-        read_only_fields = ["id", "tenant", "role"]
+        read_only_fields = ["id", "tenant", "role", "staff_pin"]
 
 
 class ErrorResponseSerializer(serializers.Serializer):
@@ -27,6 +30,16 @@ class ErrorResponseSerializer(serializers.Serializer):
 class LoginRequestSerializer(serializers.Serializer):
     username = serializers.CharField(help_text="Account username.")
     password = serializers.CharField(help_text="Account password.", write_only=True)
+
+
+class StaffPinLoginRequestSerializer(serializers.Serializer):
+    pin = serializers.CharField(help_text="Staff login PIN.")
+
+
+class StaffLoginRequestSerializer(serializers.Serializer):
+    username = serializers.CharField(required=False, help_text="Staff username.")
+    password = serializers.CharField(required=False, help_text="Staff password.", write_only=True)
+    pin = serializers.CharField(required=False, help_text="Staff login PIN.")
 
 
 class TokenPairResponseSerializer(serializers.Serializer):

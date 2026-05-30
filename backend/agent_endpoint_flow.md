@@ -19,6 +19,12 @@ This document describes the main backend API flow exposed by the project and how
 - Returns a refresh token and an access token.
 - The custom token payload includes user role and tenant information.
 
+### `POST /api/staff/login/`
+
+- Staff login via a persistent 6-digit PIN or via username and password.
+- Accepts either `pin` or `username` plus `password` and returns refresh and access tokens.
+- The access token includes the staff user's role and tenant information.
+
 ### `POST /api/auth/refresh/`
 
 - Accepts a refresh token.

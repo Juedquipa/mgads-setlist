@@ -1,8 +1,9 @@
 from apps.music_queue.views import (
     ApprovalViewSet,
     ClientPinCodeValidateView,
-    ClientRequestSongView,
+    ClientPinLoginView,
     ClientRequestListView,
+    ClientRequestSongView,
     ClientSessionView,
     PinCodeViewSet,
     QueueViewSet,
@@ -10,6 +11,7 @@ from apps.music_queue.views import (
 from apps.users.views import (
     CustomTokenObtainPairView,
     CustomTokenRefreshView,
+    StaffPinLoginView,
     WaiterViewSet,
 )
 from apps.venues.views import TableViewSet
@@ -31,9 +33,19 @@ approval_reject = ApprovalViewSet.as_view({"put": "reject"})
 urlpatterns = [
     # Auth
     path("auth/login/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path(
+        "staff/login/",
+        StaffPinLoginView.as_view(),
+        name="staff_pin_login",
+    ),
     path("auth/refresh/", CustomTokenRefreshView.as_view(), name="token_refresh"),
     # Client specific endpoints
     path("client/session/", ClientSessionView.as_view(), name="client-session"),
+    path(
+        "client/pin-login/",
+        ClientPinLoginView.as_view(),
+        name="client-pin-login",
+    ),
     path(
         "client/pin-validate/",
         ClientPinCodeValidateView.as_view(),
