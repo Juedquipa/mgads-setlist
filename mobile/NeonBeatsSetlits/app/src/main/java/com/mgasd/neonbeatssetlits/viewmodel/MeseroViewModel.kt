@@ -97,6 +97,28 @@ class MeseroViewModel : ViewModel() {
         }
     }
 
+    fun approveRequest(requestId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.approveRequest(requestId)
+                if (response.isSuccessful) {
+                    // Update state or reload
+                }
+            } catch (e: Exception) {}
+        }
+    }
+
+    fun rejectRequest(requestId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.rejectRequest(requestId)
+                if (response.isSuccessful) {
+                    // Update state or reload
+                }
+            } catch (e: Exception) {}
+        }
+    }
+
     fun onUsernameChange(newUsername: String) {
         _uiState.update { it.copy(username = newUsername) }
     }
