@@ -1,9 +1,26 @@
 package com.mgasd.neonbeatssetlits.ui.screens.mesero
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -12,22 +29,37 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
 
 /**
@@ -58,7 +90,11 @@ fun B3_GeneracionDeCodigoScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = { /* Menu */ }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.primary)
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 actions = {
@@ -217,8 +253,8 @@ fun TableItem(
         color = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
         border = androidx.compose.foundation.BorderStroke(
             width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) MaterialTheme.colorScheme.tertiary.copy(alpha = pulseAlpha) 
-                    else MaterialTheme.colorScheme.outlineVariant
+            color = if (isSelected) MaterialTheme.colorScheme.tertiary.copy(alpha = pulseAlpha)
+            else MaterialTheme.colorScheme.outlineVariant
         )
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -272,7 +308,10 @@ fun PinDisplayArea(
                 .fillMaxWidth()
                 .shadow(elevation = 4.dp, spotColor = MaterialTheme.colorScheme.tertiary),
             color = MaterialTheme.colorScheme.background,
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary),
+            border = androidx.compose.foundation.BorderStroke(
+                1.dp,
+                MaterialTheme.colorScheme.tertiary
+            ),
             shape = RoundedCornerShape(4.dp)
         ) {
             Text(
@@ -293,15 +332,18 @@ fun PinDisplayArea(
         val timeStr = String.format("%02d:%02d", minutes, seconds)
         val progress = secondsRemaining.toFloat() / totalSeconds.toFloat()
 
-        Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    Icons.Default.Timer, 
-                    contentDescription = null, 
+                    Icons.Default.Timer,
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(18.dp)
                 )
@@ -312,7 +354,7 @@ fun PinDisplayArea(
                     color = MaterialTheme.colorScheme.error
                 )
             }
-            
+
             LinearProgressIndicator(
                 progress = { progress },
                 modifier = Modifier
@@ -323,5 +365,18 @@ fun PinDisplayArea(
                 trackColor = MaterialTheme.colorScheme.surfaceVariant
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun B3_GeneracionDeCodigoScreenPreview() {
+
+    val meseroViewModel: MeseroViewModel = viewModel();
+    NeonBeatsTheme {
+        B3_GeneracionDeCodigoScreen(
+            meseroViewModel,
+            onNavigateBack = {}
+        )
     }
 }
