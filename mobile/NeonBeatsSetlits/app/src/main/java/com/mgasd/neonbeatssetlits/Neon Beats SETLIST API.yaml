@@ -1,0 +1,1437 @@
+wopenapi: 3.0.3
+info:
+  title: Neon Beats SETLIST API
+  version: 1.0.0
+  description: Multi-Tenant backend API for Neon Beats SETLIST
+paths:
+  /api/approvals/{id}/approve/:
+    put:
+      operationId: approvals_approve_update
+      description:
+        Marks a pending request as playing and broadcasts the queue update
+        for the current tenant.
+      summary: Approve a request
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - approvals
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Request"
+          description: ""
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/approvals/{id}/reject/:
+    put:
+      operationId: approvals_reject_update
+      description:
+        Marks a pending request as skipped and broadcasts the queue update
+        for the current tenant.
+      summary: Reject a request
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      tags:
+        - approvals
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Request"
+          description: ""
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/approvals/pending/:
+    get:
+      operationId: approvals_pending_list
+      description:
+        Returns the pending song requests that can be approved or rejected
+        for the authenticated user's tenant.
+      summary: List pending approvals
+      tags:
+        - approvals
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Request"
+          description: ""
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description:
+        Authenticates a user with username and password and returns a refresh
+        token plus a short-lived access token. The access token includes custom role
+        and tenant claims.
+      summary: Log in and get JWT tokens
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenPairResponse"
+          description: ""
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: Exchanges a valid refresh token for a new access token.
+      summary: Refresh an access token
+      tags:
+        - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TokenRefreshRequest"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/TokenRefreshRequest"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/TokenRefreshRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenRefreshResponse"
+          description: ""
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/client/pin-validate/:
+    post:
+      operationId: client_pin_validate_create
+      description:
+        Applies an unused venue PIN code to the current client session
+        and adds its credits to the session balance. Requires the X-Session-Token
+        header.
+      summary: Validate a PIN code
+      parameters:
+        - in: header
+          name: X-Session-Token
+          schema:
+            type: string
+          description: Session token returned by the client session creation endpoint.
+          required: true
+      tags:
+        - client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientPinCodeValidateRequest"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/ClientPinCodeValidateRequest"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ClientPinCodeValidateRequest"
+        required: true
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClientPinCodeValidateResponse"
+          description: ""
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/client/request-song/:
+    post:
+      operationId: client_request_song_create
+      description:
+        Creates a pending song request for the current client session and
+        consumes one credit from the session balance. Requires the X-Session-Token
+        header.
+      summary: Request a song
+      parameters:
+        - in: header
+          name: X-Session-Token
+          schema:
+            type: string
+          description: Session token returned by the client session creation endpoint.
+          required: true
+      tags:
+        - client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientRequestSongRequest"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/ClientRequestSongRequest"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ClientRequestSongRequest"
+        required: true
+      security:
+        - jwtAuth: []
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Request"
+          description: ""
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/client/session/:
+    post:
+      operationId: client_session_create
+      description:
+        Validates an active table QR code and creates a temporary client
+        session for the table. The returned token is required by the client-only endpoints.
+      summary: Create a client session
+      tags:
+        - client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientSessionRequest"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/ClientSessionRequest"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/ClientSessionRequest"
+        required: true
+      security:
+        - jwtAuth: []
+        - {}
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+          description: ""
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/pin-codes/:
+    get:
+      operationId: pin_codes_list
+      description: Returns the PIN codes that belong to the authenticated user's tenant.
+      summary: List PIN codes
+      tags:
+        - pin-codes
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PinCode"
+          description: ""
+    post:
+      operationId: pin_codes_create
+      description:
+        Creates a new tenant-bound PIN code and generates the code value
+        automatically.
+      summary: Create a PIN code
+      tags:
+        - pin-codes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PinCode"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PinCode"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PinCode"
+      security:
+        - jwtAuth: []
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinCode"
+          description: ""
+  /api/pin-codes/{id}/:
+    get:
+      operationId: pin_codes_retrieve
+      description: Returns a single PIN code from the authenticated user's tenant.
+      summary: Get a PIN code
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: A unique integer value identifying this pin code.
+          required: true
+      tags:
+        - pin-codes
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinCode"
+          description: ""
+    put:
+      operationId: pin_codes_update
+      description: Updates an existing PIN code in the authenticated user's tenant.
+      summary: Update a PIN code
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: A unique integer value identifying this pin code.
+          required: true
+      tags:
+        - pin-codes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PinCode"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PinCode"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PinCode"
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinCode"
+          description: ""
+    patch:
+      operationId: pin_codes_partial_update
+      description:
+        Updates one or more fields on a PIN code in the authenticated user's
+        tenant.
+      summary: Partially update a PIN code
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: A unique integer value identifying this pin code.
+          required: true
+      tags:
+        - pin-codes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedPinCode"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedPinCode"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PatchedPinCode"
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PinCode"
+          description: ""
+    delete:
+      operationId: pin_codes_destroy
+      description: Deletes a PIN code from the authenticated user's tenant.
+      summary: Delete a PIN code
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          description: A unique integer value identifying this pin code.
+          required: true
+      tags:
+        - pin-codes
+      security:
+        - jwtAuth: []
+      responses:
+        "204":
+          description: No response body
+  /api/queue/:
+    get:
+      operationId: queue_list
+      description:
+        Returns the pending song requests for the authenticated user's
+        tenant, ordered by request time.
+      summary: List pending queue items
+      tags:
+        - queue
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Request"
+          description: ""
+  /api/queue/clear/:
+    delete:
+      operationId: queue_clear_destroy
+      description:
+        Deletes all pending song requests for the authenticated user's
+        tenant. This action is restricted to ADMIN users.
+      summary: Clear the pending queue
+      tags:
+        - queue
+      security:
+        - jwtAuth: []
+      responses:
+        "204":
+          description: No response body
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/spotify/search/:
+    get:
+      operationId: spotify_search_retrieve
+      description:
+        Searches the tenant's configured Spotify catalog for tracks that
+        match the given query.
+      summary: Search Spotify tracks
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: Free-text search query.
+          required: true
+      tags:
+        - spotify
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpotifySearchResponse"
+          description: ""
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/spotify/track/{track_id}/:
+    get:
+      operationId: spotify_track_retrieve
+      description:
+        Fetches a single track by Spotify ID from the tenant's configured
+        Spotify account.
+      summary: Get a Spotify track
+      parameters:
+        - in: path
+          name: track_id
+          schema:
+            type: string
+          description: Spotify track ID to retrieve.
+          required: true
+      tags:
+        - spotify
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpotifyTrack"
+          description: ""
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+        "502":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/tables/:
+    get:
+      operationId: tables_list
+      description: Returns the tables that belong to the authenticated user's tenant.
+      summary: List tables
+      tags:
+        - tables
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Table"
+          description: ""
+    post:
+      operationId: tables_create
+      description: Creates a new table under the authenticated user's tenant.
+      summary: Create a table
+      tags:
+        - tables
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Table"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Table"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Table"
+        required: true
+      security:
+        - jwtAuth: []
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Table"
+          description: ""
+  /api/tables/{id}/:
+    get:
+      operationId: tables_retrieve
+      description: Returns a single table from the authenticated user's tenant.
+      summary: Get a table
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - tables
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Table"
+          description: ""
+    put:
+      operationId: tables_update
+      description: Updates a table that belongs to the authenticated user's tenant.
+      summary: Update a table
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - tables
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Table"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Table"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Table"
+        required: true
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Table"
+          description: ""
+    patch:
+      operationId: tables_partial_update
+      description:
+        Updates one or more fields on a table in the authenticated user's
+        tenant.
+      summary: Partially update a table
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - tables
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedTable"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedTable"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PatchedTable"
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Table"
+          description: ""
+    delete:
+      operationId: tables_destroy
+      description: Deletes a table from the authenticated user's tenant.
+      summary: Delete a table
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - tables
+      security:
+        - jwtAuth: []
+      responses:
+        "204":
+          description: No response body
+  /api/tables/{id}/session/:
+    get:
+      operationId: tables_session_retrieve
+      description:
+        Returns the active client session for the requested table, if one
+        exists.
+      summary: Get the active session for a table
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - tables
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+          description: ""
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+          description: ""
+  /api/waiters/:
+    get:
+      operationId: waiters_list
+      description: Returns the waiters that belong to the authenticated user's tenant.
+      summary: List waiters
+      tags:
+        - waiters
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+          description: ""
+    post:
+      operationId: waiters_create
+      description: Creates a waiter user in the authenticated user's tenant.
+      summary: Create a waiter
+      tags:
+        - waiters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/User"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+      security:
+        - jwtAuth: []
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: ""
+  /api/waiters/{id}/:
+    get:
+      operationId: waiters_retrieve
+      description: Returns a single waiter from the authenticated user's tenant.
+      summary: Get a waiter
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - waiters
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: ""
+    put:
+      operationId: waiters_update
+      description: Updates a waiter that belongs to the authenticated user's tenant.
+      summary: Update a waiter
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - waiters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/User"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/User"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/User"
+        required: true
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: ""
+    patch:
+      operationId: waiters_partial_update
+      description: Updates one or more waiter fields in the authenticated user's tenant.
+      summary: Partially update a waiter
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - waiters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchedUser"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/PatchedUser"
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/PatchedUser"
+      security:
+        - jwtAuth: []
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+          description: ""
+    delete:
+      operationId: waiters_destroy
+      description: Deletes a waiter that belongs to the authenticated user's tenant.
+      summary: Delete a waiter
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      tags:
+        - waiters
+      security:
+        - jwtAuth: []
+      responses:
+        "204":
+          description: No response body
+components:
+  schemas:
+    ClientPinCodeValidateRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: PIN code provided by the venue.
+      required:
+        - code
+    ClientPinCodeValidateResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+        credits_added:
+          type: integer
+        new_balance:
+          type: integer
+      required:
+        - credits_added
+        - detail
+        - new_balance
+    ClientRequestSongRequest:
+      type: object
+      properties:
+        spotify_id:
+          type: string
+          description: Spotify track identifier.
+        title:
+          type: string
+          description: Track title.
+        artist:
+          type: string
+          description: Track artist.
+        duration_ms:
+          type: integer
+          default: 0
+        album_art_url:
+          type: string
+          default: ""
+      required:
+        - artist
+        - spotify_id
+        - title
+    ClientSessionRequest:
+      type: object
+      properties:
+        qr_code:
+          type: string
+          description: QR code token printed on the table.
+      required:
+        - qr_code
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+        - detail
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Account username.
+        password:
+          type: string
+          writeOnly: true
+          description: Account password.
+      required:
+        - password
+        - username
+    PatchedPinCode:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        credits:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_used:
+          type: boolean
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        table:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+    PatchedTable:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        qr_code_token:
+          type: string
+          readOnly: true
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description:
+            Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+            - $ref: "#/components/schemas/RoleEnum"
+          readOnly: true
+        tenant:
+          type: integer
+          readOnly: true
+          nullable: true
+    PinCode:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        code:
+          type: string
+          readOnly: true
+        credits:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+        is_used:
+          type: boolean
+          readOnly: true
+        created_by:
+          type: integer
+          readOnly: true
+          nullable: true
+        table:
+          type: integer
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+        - code
+        - created_at
+        - created_by
+        - id
+        - is_used
+        - used_at
+    Request:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        track:
+          allOf:
+            - $ref: "#/components/schemas/Track"
+          readOnly: true
+        track_id:
+          type: integer
+          writeOnly: true
+        status:
+          allOf:
+            - $ref: "#/components/schemas/StatusEnum"
+          readOnly: true
+        requested_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - id
+        - requested_at
+        - status
+        - track
+        - track_id
+    RoleEnum:
+      enum:
+        - ADMIN
+        - WAITER
+      type: string
+      description: |-
+        * `ADMIN` - Admin
+        * `WAITER` - Waiter
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        token:
+          type: string
+          readOnly: true
+        credits_balance:
+          type: integer
+          readOnly: true
+        is_active:
+          type: boolean
+        table:
+          type: integer
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - created_at
+        - credits_balance
+        - id
+        - table
+        - token
+    SpotifyAlbum:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        album_type:
+          type: string
+        href:
+          type: string
+          format: uri
+        release_date:
+          type: string
+        release_date_precision:
+          type: string
+        uri:
+          type: string
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotifyImage"
+        external_urls:
+          $ref: "#/components/schemas/SpotifyExternalUrls"
+      required:
+        - id
+        - name
+    SpotifyArtist:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        href:
+          type: string
+          format: uri
+        type:
+          type: string
+        uri:
+          type: string
+        external_urls:
+          $ref: "#/components/schemas/SpotifyExternalUrls"
+      required:
+        - id
+        - name
+    SpotifyExternalUrls:
+      type: object
+      properties:
+        spotify:
+          type: string
+          format: uri
+      required:
+        - spotify
+    SpotifyImage:
+      type: object
+      properties:
+        height:
+          type: integer
+          nullable: true
+        url:
+          type: string
+          format: uri
+        width:
+          type: integer
+          nullable: true
+      required:
+        - url
+    SpotifySearchResponse:
+      type: object
+      properties:
+        tracks:
+          $ref: "#/components/schemas/SpotifyTracksPaging"
+      required:
+        - tracks
+    SpotifyTrack:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        uri:
+          type: string
+        href:
+          type: string
+          format: uri
+        duration_ms:
+          type: integer
+        explicit:
+          type: boolean
+        preview_url:
+          type: string
+          format: uri
+          nullable: true
+        track_number:
+          type: integer
+        artists:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotifyArtist"
+        album:
+          $ref: "#/components/schemas/SpotifyAlbum"
+      required:
+        - artists
+        - duration_ms
+        - id
+        - name
+        - uri
+    SpotifyTracksPaging:
+      type: object
+      properties:
+        href:
+          type: string
+          format: uri
+        limit:
+          type: integer
+        next:
+          type: string
+          format: uri
+          nullable: true
+        offset:
+          type: integer
+        previous:
+          type: string
+          format: uri
+          nullable: true
+        total:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SpotifyTrack"
+      required:
+        - items
+        - limit
+        - offset
+        - total
+    StatusEnum:
+      enum:
+        - PENDING
+        - PLAYING
+        - PLAYED
+        - SKIPPED
+      type: string
+      description: |-
+        * `PENDING` - Pending
+        * `PLAYING` - Playing
+        * `PLAYED` - Played
+        * `SKIPPED` - Skipped
+    Table:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        qr_code_token:
+          type: string
+          readOnly: true
+          nullable: true
+        is_active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+        - created_at
+        - id
+        - name
+        - qr_code_token
+    TokenPairResponse:
+      type: object
+      properties:
+        refresh:
+          type: string
+          description: JWT refresh token.
+        access:
+          type: string
+          description: JWT access token.
+      required:
+        - access
+        - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          description: JWT refresh token.
+      required:
+        - refresh
+    TokenRefreshResponse:
+      type: object
+      properties:
+        access:
+          type: string
+          description: New JWT access token.
+      required:
+        - access
+    Track:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        spotify_id:
+          type: string
+          maxLength: 255
+        title:
+          type: string
+          maxLength: 255
+        artist:
+          type: string
+          maxLength: 255
+        album_art_url:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 200
+        duration_ms:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+      required:
+        - artist
+        - duration_ms
+        - id
+        - spotify_id
+        - title
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          description:
+            Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+            - $ref: "#/components/schemas/RoleEnum"
+          readOnly: true
+        tenant:
+          type: integer
+          readOnly: true
+          nullable: true
+      required:
+        - id
+        - role
+        - tenant
+        - username
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

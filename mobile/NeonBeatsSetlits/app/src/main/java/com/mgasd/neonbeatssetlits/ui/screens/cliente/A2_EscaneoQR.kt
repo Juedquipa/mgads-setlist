@@ -33,9 +33,19 @@ import com.mgasd.neonbeatssetlits.viewmodel.ClienteViewModel
 @Composable
 fun A2_EscaneoQR(
     viewModel: ClienteViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onMesaIdentificada: () -> Unit
 ) {
     val isFlashlightOn by viewModel.isFlashlightOn.collectAsState()
+    val session by viewModel.session.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(session) {
+        if (session != null) {
+            onMesaIdentificada()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -118,7 +128,7 @@ fun A2_EscaneoQR(
                             tint = Color.White
                         )
                     }
-                    
+
                     Text(
                         text = "NEON BEATS",
                         style = MaterialTheme.typography.displaySmall.copy(
@@ -128,7 +138,7 @@ fun A2_EscaneoQR(
                         ),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    
+
                     Spacer(modifier = Modifier.size(40.dp))
                 }
 
@@ -180,6 +190,26 @@ fun A2_EscaneoQR(
                         )
                     )
                 }
+            }
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = NeonGreen)
+                }
+            }
+
+            error?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -320,7 +350,8 @@ fun A2_EscaneoQRPreview() {
     NeonBeatsTheme {
         A2_EscaneoQR(
             viewModel = ClienteViewModel(),
-            onBack = {}
+            onBack = {},
+            onMesaIdentificada = {}
         )
     }
 }
