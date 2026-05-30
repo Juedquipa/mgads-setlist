@@ -372,23 +372,40 @@ class MeseroViewModel : ViewModel() {
     }
 
     fun onGenerateNewCode() {
+        val tableId = _codeGenState.value.selectedTable?.replace("T", "")?.toIntOrNull()
+        _codeGenState.update { it.copy(isGenerating = true) }
+        
         viewModelScope.launch {
             try {
-                // Re-cargamos los datos para obtener el token más reciente del servidor
-                val response = RetrofitClient.instance.listTables()
+                // Creamos un nuevo PIN vinculado a la mesa seleccionada
+                val dummyPin = com.mgasd.neonbeatssetlits.data.model.PinCode(
+                    id = 0,
+                    code = "",
+                    credits = 1,
+                    is_used = false,
+                    created_by = null,
+                    table = tableId,
+                    created_at = "",
+                    used_at = null
+                )
+                
+                val response = RetrofitClient.instance.createPinCode(dummyPin)
                 if (response.isSuccessful) {
-                    val tables = response.body() ?: emptyList()
-                    val selectedId = _codeGenState.value.selectedTable
-                    val updatedTable = tables.find { "T${it.id}" == selectedId }
-                    
+                    val newPin = response.body()
                     _codeGenState.update { 
                         it.copy(
-                            generatedCode = updatedTable?.qr_code_token ?: ""
+                            generatedCode = newPin?.code ?: "",
+                            isGenerating = false,
+                            secondsRemaining = 300
                         )
                     }
-                    loadTablesData() // Refresh general
+                    loadHomeData() // Refrescar historial
+                } else {
+                    _codeGenState.update { it.copy(isGenerating = false) }
                 }
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+                _codeGenState.update { it.copy(isGenerating = false) }
+            }
         }
     }
 

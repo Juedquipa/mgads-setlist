@@ -135,21 +135,24 @@ fun B3_GeneracionDeCodigoScreen(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Área del Código Generado (Solo se muestra si hay un código)
-            if (state.generatedCode.isNotEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant)
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CornerAccents()
+            // Área del Código Generado
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(380.dp)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CornerAccents()
 
+                if (state.isGenerating) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.tertiary)
+                } else if (state.generatedCode.isNotEmpty()) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "CÓDIGO QR DE MESA",
+                            "CÓDIGO QR ACTIVO",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             letterSpacing = 2.sp
@@ -157,7 +160,6 @@ fun B3_GeneracionDeCodigoScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // QR Code Display - Ahora usa el token real de la mesa
                         QRCodeImage(
                             content = state.generatedCode,
                             modifier = Modifier.size(200.dp)
@@ -166,23 +168,22 @@ fun B3_GeneracionDeCodigoScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = if (state.generatedCode.isNotEmpty()) "TOKEN: ${state.generatedCode.take(8)}..." else "SIN TOKEN",
+                            text = state.generatedCode,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 1.sp
+                                letterSpacing = 2.sp
                             ),
                             color = MaterialTheme.colorScheme.tertiary
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // Timer Circular Progresivo
                         val progress = if (state.totalSeconds > 0) state.secondsRemaining.toFloat() / state.totalSeconds.toFloat() else 0f
                         Box(contentAlignment = Alignment.Center) {
                             CircularProgressIndicator(
                                 progress = { progress },
-                                modifier = Modifier.size(64.dp),
+                                modifier = Modifier.size(48.dp),
                                 color = MaterialTheme.colorScheme.tertiary,
                                 strokeWidth = 2.dp,
                                 trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
@@ -194,22 +195,13 @@ fun B3_GeneracionDeCodigoScreen(
                             )
                         }
                     }
-                }
-            } else {
-                // Placeholder o mensaje cuando no hay código
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(300.dp)
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
-                        .alpha(0.5f),
-                    contentAlignment = Alignment.Center
-                ) {
+                } else {
                     Text(
                         "SELECCIONE UNA MESA Y\nGENERE UN CÓDIGO",
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.alpha(0.5f)
                     )
                 }
             }

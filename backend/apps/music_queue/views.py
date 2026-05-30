@@ -1,3 +1,5 @@
+from urllib.parse import parse_qs, urlparse
+
 from apps.venues.models import Table
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -29,6 +31,27 @@ def broadcast_queue_update(tenant_id):
         f"queue_{tenant_id}",
         {"type": "queue_update", "message": "The queue has been updated"},
     )
+
+
+def _extract_qr_code_token(raw_value):
+    if raw_value is None:
+        return None
+
+    value = str(raw_value).strip()
+    if not value:
+        return None
+
+    parsed_url = urlparse(value)
+    if parsed_url.scheme and parsed_url.netloc:
+        query_token = parse_qs(parsed_url.query).get("qr_code", [None])[0]
+        if query_token:
+            return query_token.strip() or None
+
+        path_token = parsed_url.path.rstrip("/").split("/")[-1]
+        if path_token:
+            return path_token.strip() or None
+
+    return value
 
 
 @extend_schema_view(
@@ -211,7 +234,9 @@ class ClientSessionView(views.APIView):
         },
     )
     def post(self, request):
-        qr_token = request.data.get("qr_code")
+        qr_token = _extract_qr_code_token(
+            request.data.get("qr_code") or request.data.get("qr_code_token")
+        )
         if not qr_token:
             return Response({"detail": "qr_code is required"}, status=status.HTTP_400_BAD_REQUEST)
 
