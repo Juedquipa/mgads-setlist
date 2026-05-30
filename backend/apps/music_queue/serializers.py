@@ -16,7 +16,14 @@ class PinCodeSerializer(serializers.ModelSerializer):
             "created_at",
             "used_at",
         ]
-        read_only_fields = ["id", "code", "is_used", "created_by", "created_at", "used_at"]
+        read_only_fields = [
+            "id",
+            "code",
+            "is_used",
+            "created_by",
+            "created_at",
+            "used_at",
+        ]
 
 
 class SessionSerializer(serializers.ModelSerializer):

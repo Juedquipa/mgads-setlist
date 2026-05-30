@@ -8,7 +8,9 @@ class User(AbstractUser):
         ADMIN = "ADMIN", _("Admin")
         WAITER = "WAITER", _("Waiter")
 
-    role = models.CharField(max_length=50, choices=RoleChoices.choices, default=RoleChoices.WAITER)
+    role = models.CharField(
+        max_length=50, choices=RoleChoices.choices, default=RoleChoices.WAITER
+    )
     tenant = models.ForeignKey(
         "tenants.Tenant",
         on_delete=models.CASCADE,
