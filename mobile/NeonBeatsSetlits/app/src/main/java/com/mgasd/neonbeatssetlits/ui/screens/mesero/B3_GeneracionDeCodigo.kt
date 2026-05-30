@@ -1,53 +1,24 @@
 package com.mgasd.neonbeatssetlits.ui.screens.mesero
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
@@ -58,311 +29,193 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
 
-/**
- * Pantalla B3 - Generación de Código v1.0
- * Estética: Industrial Neon Underground
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun B3_GeneracionDeCodigoScreen(
     viewModel: MeseroViewModel,
-    onNavigateBack: () -> Unit
+    onBack: () -> Unit
 ) {
     val state by viewModel.codeGenState.collectAsStateWithLifecycle()
 
     Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "NEON BEATS SETLIST",
-                        style = MaterialTheme.typography.displaySmall.copy(
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Black,
-                            letterSpacing = (-1).sp
-                        ),
-                        color = MaterialTheme.colorScheme.primary
+                        "ASIGNAR CÓDIGO",
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            letterSpacing = 4.sp,
+                            fontWeight = FontWeight.Bold
+                        )
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { /* Menu */ }) {
-                        Icon(
-                            Icons.Default.Menu,
-                            contentDescription = "Menu",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                actions = {
-                    TextButton(onClick = { /* Table select */ }) {
-                        Text(
-                            "TABLE 04",
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Transparent
                 )
             )
-        },
-        containerColor = MaterialTheme.colorScheme.background
+        }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Background Decor
-            BackgroundDecor()
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(32.dp)
+            // Selector de Mesa
+            Text(
+                "SELECCIONAR MESA",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.heightIn(max = 120.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
+                items(state.tables) { tableId ->
+                    val isSelected = state.selectedTable == tableId
+                    Surface(
+                        onClick = { viewModel.onTableSelect(tableId) },
+                        color = if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp, 
+                            if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.surfaceVariant
+                        ),
+                        shape = RoundedCornerShape(4.dp),
+                        modifier = Modifier.aspectRatio(1f)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(
+                                tableId,
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = if (isSelected) Color.Black else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+            }
 
-                // Context Header
+            Spacer(modifier = Modifier.height(48.dp))
+
+            // Área del Código Generado
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.dp, MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CornerAccents()
+                
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        "ACCESO A MESA",
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                    Text(
-                        "Selecciona una mesa y genera un código de acceso temporal.",
-                        style = MaterialTheme.typography.bodySmall,
+                        "CÓDIGO DE ACCESO",
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center
+                        letterSpacing = 2.sp
                     )
-                }
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // Table Selector Grid
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(4),
-                    modifier = Modifier.height(180.dp),
-                    contentPadding = PaddingValues(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(state.tables) { tableId ->
-                        val isSelected = state.selectedTable == tableId
-                        TableItem(
-                            tableId = tableId,
-                            isSelected = isSelected,
-                            onClick = { viewModel.onTableSelect(tableId) }
+                    Text(
+                        text = state.generatedCode,
+                        style = MaterialTheme.typography.displayMedium.copy(
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 4.sp
+                        ),
+                        color = MaterialTheme.colorScheme.tertiary
+                    )
+                    
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    // Timer Circular Progresivo
+                    val progress = state.secondsRemaining.toFloat() / state.totalSeconds.toFloat()
+                    Box(contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.size(64.dp),
+                            color = MaterialTheme.colorScheme.tertiary,
+                            strokeWidth = 2.dp,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                        )
+                        Text(
+                            "${state.secondsRemaining}s",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
+            }
 
-                // PIN Display Area
-                PinDisplayArea(
-                    tableId = state.selectedTable ?: "",
-                    code = state.generatedCode,
-                    secondsRemaining = state.secondsRemaining,
-                    totalSeconds = state.totalSeconds
-                )
+            Spacer(modifier = Modifier.height(48.dp))
 
-                // Action Button
+            // Acciones
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Button(
-                    onClick = viewModel::onGenerateNewCode,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .shadow(
-                            elevation = 12.dp,
-                            spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
-                        ),
+                    onClick = { viewModel.onGenerateNewCode() },
+                    modifier = Modifier.weight(1f).height(64.dp),
                     shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.2f),
+                        contentColor = MaterialTheme.colorScheme.onSurface
+                    )
+                ) {
+                    Icon(Icons.Default.Refresh, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("REGENERAR")
+                }
+
+                Button(
+                    onClick = { /* Lógica Compartir */ },
+                    modifier = Modifier.weight(1f).height(64.dp),
+                    shape = RoundedCornerShape(4.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
                         contentColor = Color.Black
                     )
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(Icons.Default.Refresh, contentDescription = null)
-                        Text(
-                            "GENERAR NUEVO CÓDIGO",
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                letterSpacing = 2.sp
-                            )
-                        )
-                    }
+                    Icon(Icons.Default.Share, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("COMPARTIR", fontWeight = FontWeight.Bold)
                 }
             }
-        }
-    }
-}
 
-@Composable
-fun BackgroundDecor() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .size(400.dp)
-                .align(Alignment.Center)
-                .blur(150.dp)
-                .alpha(0.1f)
-                .background(MaterialTheme.colorScheme.tertiary, RoundedCornerShape(200.dp))
-        )
-    }
-}
+            Spacer(modifier = Modifier.weight(1f))
 
-@Composable
-fun TableItem(
-    tableId: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val pulseAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.4f,
-        targetValue = 0.8f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "alpha"
-    )
-
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .aspectRatio(1f)
-            .then(
-                if (isSelected) {
-                    Modifier.shadow(
-                        elevation = 8.dp,
-                        spotColor = MaterialTheme.colorScheme.tertiary.copy(alpha = pulseAlpha)
-                    )
-                } else Modifier
-            ),
-        shape = RoundedCornerShape(4.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface,
-        border = androidx.compose.foundation.BorderStroke(
-            width = if (isSelected) 2.dp else 1.dp,
-            color = if (isSelected) MaterialTheme.colorScheme.tertiary.copy(alpha = pulseAlpha)
-            else MaterialTheme.colorScheme.outlineVariant
-        )
-    ) {
-        Box(contentAlignment = Alignment.Center) {
+            // Info de Seguridad
             Text(
-                tableId,
-                style = MaterialTheme.typography.bodyMedium.copy(
+                text = "ESTE CÓDIGO ES DE UN SOLO USO Y EXPIRA\nEN 5 MINUTOS TRAS SU GENERACIÓN.",
+                style = MaterialTheme.typography.bodySmall.copy(
                     fontFamily = FontFamily.Monospace,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                    lineHeight = 16.sp
                 ),
-                color = if (isSelected) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface
-            )
-            if (isSelected) {
-                Text(
-                    "SEL.",
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 4.dp),
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp),
-                    color = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.8f)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun PinDisplayArea(
-    tableId: String,
-    code: String,
-    secondsRemaining: Int,
-    totalSeconds: Int
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(4.dp))
-            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(4.dp))
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Text(
-            "CÓDIGO GENERADO PARA MESA ${tableId.replace("T", "")}",
-            style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 2.sp),
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        // Giant PIN
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .shadow(elevation = 4.dp, spotColor = MaterialTheme.colorScheme.tertiary),
-            color = MaterialTheme.colorScheme.background,
-            border = androidx.compose.foundation.BorderStroke(
-                1.dp,
-                MaterialTheme.colorScheme.tertiary
-            ),
-            shape = RoundedCornerShape(4.dp)
-        ) {
-            Text(
-                code,
-                modifier = Modifier.padding(vertical = 16.dp),
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontFamily = FontFamily.Monospace,
-                    color = MaterialTheme.colorScheme.tertiary,
-                    letterSpacing = 8.sp,
-                    textAlign = TextAlign.Center
-                )
-            )
-        }
-
-        // Expiration Counter
-        val minutes = secondsRemaining / 60
-        val seconds = secondsRemaining % 60
-        val timeStr = String.format("%02d:%02d", minutes, seconds)
-        val progress = secondsRemaining.toFloat() / totalSeconds.toFloat()
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(
-                    Icons.Default.Timer,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "EXPIRA EN: $timeStr",
-                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
-
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(4.dp)
-                    .clip(RoundedCornerShape(2.dp)),
-                color = MaterialTheme.colorScheme.error,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 24.dp)
             )
         }
     }
@@ -370,13 +223,11 @@ fun PinDisplayArea(
 
 @Preview(showBackground = true)
 @Composable
-fun B3_GeneracionDeCodigoScreenPreview() {
-
-    val meseroViewModel: MeseroViewModel = viewModel();
+fun B3_GeneracionDeCodigoPreview() {
     NeonBeatsTheme {
         B3_GeneracionDeCodigoScreen(
-            meseroViewModel,
-            onNavigateBack = {}
+            viewModel = MeseroViewModel(),
+            onBack = {}
         )
     }
 }
