@@ -9,9 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.HelpOutline
-import androidx.compose.material.icons.filled.FlashlightOff
-import androidx.compose.material.icons.filled.FlashlightOn
+import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.ui.theme.NeonGreen
 import com.mgasd.neonbeatssetlits.viewmodel.ClienteViewModel
@@ -49,21 +48,6 @@ fun A2_EscaneoQR(
         }
     }
 
-    A2_EscaneoQRContent(
-        isFlashlightOn = isFlashlightOn,
-        onBack = onBack,
-        onToggleFlashlight = { viewModel.toggleFlashlight() },
-        onHelpClick = { viewModel.onHelpClick() }
-    )
-}
-
-@Composable
-fun A2_EscaneoQRContent(
-    isFlashlightOn: Boolean,
-    onBack: () -> Unit,
-    onToggleFlashlight: () -> Unit,
-    onHelpClick: () -> Unit
-) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Black
@@ -104,10 +88,10 @@ fun A2_EscaneoQRContent(
                         val viewfinderSize = 260.dp.toPx()
                         val left = (canvasWidth - viewfinderSize) / 2
                         val top = (canvasHeight - viewfinderSize) / 2
-                        
+
                         // Full dark overlay
                         drawRect(color = Color(0xCC0A0A0A))
-                        
+
                         // Viewfinder cutout
                         drawRoundRect(
                             color = Color.Transparent,
@@ -155,20 +139,6 @@ fun A2_EscaneoQRContent(
                         ),
                         color = MaterialTheme.colorScheme.primary
                     )
-                    
-                    IconButton(
-                        onClick = onToggleFlashlight,
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
-                    ) {
-                        Icon(
-                            imageVector = if (isFlashlightOn) Icons.Default.FlashlightOn else Icons.Default.FlashlightOff,
-                            contentDescription = "Linterna",
-                            tint = if (isFlashlightOn) MaterialTheme.colorScheme.primary else Color.White
-                        )
-                    }
 
                     Spacer(modifier = Modifier.size(40.dp))
                 }
@@ -196,7 +166,7 @@ fun A2_EscaneoQRContent(
 
                 // Footer Help Button
                 OutlinedButton(
-                    onClick = onHelpClick,
+                    onClick = { viewModel.onHelpClick() },
                     modifier = Modifier
                         .padding(bottom = 48.dp)
                         .height(52.dp),
@@ -208,7 +178,7 @@ fun A2_EscaneoQRContent(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
+                        imageVector = Icons.Default.HelpOutline,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
@@ -249,7 +219,7 @@ fun A2_EscaneoQRContent(
 @Composable
 fun ViewfinderVisuals() {
     val infiniteTransition = rememberInfiniteTransition(label = "ViewfinderAnim")
-    
+
     val cornersAlpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
         targetValue = 1f,
@@ -276,7 +246,7 @@ fun ViewfinderVisuals() {
     ) {
         // Pulsing Corners
         ViewfinderCorners(alpha = cornersAlpha)
-        
+
         // Scanning Line
         Box(
             modifier = Modifier
@@ -298,7 +268,7 @@ fun ViewfinderVisuals() {
                     strokeWidth = 2.dp.toPx(),
                     cap = StrokeCap.Round
                 )
-                
+
                 // Glow effect for the line
                 drawRect(
                     brush = Brush.verticalGradient(
@@ -378,12 +348,14 @@ fun ViewfinderCorners(alpha: Float) {
 @Preview(showBackground = true, backgroundColor = 0xFF000000)
 @Composable
 fun A2_EscaneoQRPreview() {
+
+    val clienteViewModel: ClienteViewModel = viewModel()
+    ;
     NeonBeatsTheme {
-        A2_EscaneoQRContent(
-            isFlashlightOn = false,
+        A2_EscaneoQR(
+            viewModel = clienteViewModel,
             onBack = {},
-            onToggleFlashlight = {},
-            onHelpClick = {}
+            onMesaIdentificada = {}
         )
     }
 }
