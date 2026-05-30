@@ -1,20 +1,26 @@
-package com.unab.mgads.setlist.viewmodel
+package com.mgasd.neonbeatssetlits.viewmodel
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 class ClienteViewModel : ViewModel() {
-    
-    private val _isScannerActive = MutableStateFlow(false)
-    val isScannerActive = _isScannerActive.asStateFlow()
+    private val _isFlashlightOn = MutableStateFlow(false)
+    val isFlashlightOn = _isFlashlightOn.asStateFlow()
 
-    fun onScanButtonClick() {
-        // Lógica para iniciar el escaneo
-        _isScannerActive.value = true
+    fun toggleFlashlight() {
+        _isFlashlightOn.value = !_isFlashlightOn.value
     }
-    
-    fun resetScannerState() {
-        _isScannerActive.value = false
+
+    fun onBackClick() {
+        // Manejado por navegación
+    }
+
+    fun onHelpClick() {
+        // Lógica de ayuda
+    }
+
+    fun onQRCodeScanned(content: String) {
+        // Procesar QR
     }
 }
