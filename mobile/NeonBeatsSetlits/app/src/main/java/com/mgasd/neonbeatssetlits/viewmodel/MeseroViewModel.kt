@@ -1,10 +1,14 @@
 package com.mgasd.neonbeatssetlits.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.mgasd.neonbeatssetlits.data.model.LoginRequest
+import com.mgasd.neonbeatssetlits.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class MeseroLoginState(
     val username: String = "",
@@ -35,25 +39,35 @@ class MeseroViewModel : ViewModel() {
         
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         
-        // Simulación de login (en producción esto llamaría a un repository)
-        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            // Simulación simple: si el PIN tiene 4 dígitos, autorizamos
-            if (_uiState.value.pin.length == 4 && _uiState.value.username.isNotEmpty()) {
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false, 
-                        loginSuccess = true 
-                    ) 
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.login(
+                    LoginRequest(_uiState.value.username, _uiState.value.pin)
+                )
+                if (response.isSuccessful) {
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false, 
+                            loginSuccess = true 
+                        ) 
+                    }
+                } else {
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false, 
+                            errorMessage = "Credenciales incorrectas" 
+                        ) 
+                    }
                 }
-            } else {
+            } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(
                         isLoading = false, 
-                        errorMessage = "Credenciales incorrectas" 
+                        errorMessage = "Error de conexión" 
                     ) 
                 }
             }
-        }, 1500)
+        }
     }
     
     fun resetLoginState() {
