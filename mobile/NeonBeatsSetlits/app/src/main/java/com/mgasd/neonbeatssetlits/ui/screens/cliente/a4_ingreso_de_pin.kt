@@ -12,7 +12,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Backspace
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.*
@@ -290,7 +290,7 @@ fun KeypadGrid(
                     KeypadButton(
                         content = {
                             Icon(
-                                Icons.Default.Backspace,
+                                Icons.AutoMirrored.Filled.Backspace,
                                 contentDescription = "Delete",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )

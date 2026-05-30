@@ -1,8 +1,8 @@
 package com.mgasd.neonbeatssetlits.ui.navigation
 
+import androidx.camera.core.ExperimentalGetImage
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -11,7 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-//import com.mgasd.neonbeatssetlits.ui.screens.gitadmin.*
+import com.mgasd.neonbeatssetlits.ui.screens.admin.*
 import com.mgasd.neonbeatssetlits.ui.screens.cliente.*
 import com.mgasd.neonbeatssetlits.ui.screens.mesero.*
 import com.mgasd.neonbeatssetlits.viewmodel.AdminViewModel
@@ -45,8 +45,12 @@ sealed class Screen(val route: String) {
     object DashboardDj : Screen("dashboard_dj")
     object QueueManagement : Screen("queue_management")
     object Approvals : Screen("aprobaciones")
+    object Statistics : Screen("estadisticas")
+    object StaffManagement : Screen("staff_management")
+    object Config : Screen("configuracion")
 }
 
+@ExperimentalGetImage
 @Composable
 fun SetupNavGraph(
     navController: NavHostController,
@@ -65,21 +69,16 @@ fun SetupNavGraph(
         ) {
             composable(Screen.Splash.route) {
                 A1_SplashScreen(
-                    onNavigateToScanner = {
-                        navController.navigate(Screen.ScanQR.route)
-                    },
-                    onNavigateToMeseroLogin = {
-                        navController.navigate(Screen.WaiterFlow.route)
-                    }
+                    onNavigateToScanner = { navController.navigate(Screen.ScanQR.route) },
+                    onNavigateToMeseroLogin = { navController.navigate(Screen.WaiterFlow.route) },
+                    onNavigateToAdminLogin = { navController.navigate(Screen.AdminFlow.route) }
                 )
             }
             composable(Screen.ScanQR.route) {
                 A2_EscaneoQR(
                     viewModel = clienteViewModel,
                     onBack = { navController.popBackStack() },
-                    onMesaIdentificada = {
-                        navController.navigate(Screen.TableIdentified.route)
-                    }
+                    onMesaIdentificada = { navController.navigate(Screen.TableIdentified.route) }
                 )
             }
             composable(Screen.TableIdentified.route) {
@@ -198,7 +197,6 @@ fun SetupNavGraph(
             startDestination = Screen.LoginAdmin.route,
             route = Screen.AdminFlow.route
         ) {
-            /**
             composable(Screen.LoginAdmin.route) {
                 AdminLoginScreen(
                     viewModel = adminViewModel,
@@ -211,19 +209,64 @@ fun SetupNavGraph(
             }
             composable(Screen.DashboardDj.route) {
                 DashboardDjScreen(
-                    viewModel = adminViewModel
+                    viewModel = adminViewModel,
+                    onNavigateToQueue = { navController.navigate(Screen.QueueManagement.route) },
+                    onNavigateToApprovals = { navController.navigate(Screen.Approvals.route) },
+                    onNavigateToStats = { navController.navigate(Screen.Statistics.route) },
+                    onNavigateToStaff = { navController.navigate(Screen.StaffManagement.route) },
+                    onNavigateToConfig = { navController.navigate(Screen.Config.route) }
                 )
             }
             composable(Screen.QueueManagement.route) {
                 QueueManagementScreen(
-                    viewModel = adminViewModel
+                    viewModel = adminViewModel,
+                    onNavigateToDashboard = { navController.navigate(Screen.DashboardDj.route) },
+                    onNavigateToApprovals = { navController.navigate(Screen.Approvals.route) },
+                    onNavigateToStats = { navController.navigate(Screen.Statistics.route) },
+                    onNavigateToStaff = { navController.navigate(Screen.StaffManagement.route) },
+                    onNavigateToConfig = { navController.navigate(Screen.Config.route) }
                 )
             }
             composable(Screen.Approvals.route) {
                 AprobacionesScreen(
-                    viewModel = adminViewModel
+                    viewModel = adminViewModel,
+                    onNavigateToDashboard = { navController.navigate(Screen.DashboardDj.route) },
+                    onNavigateToQueue = { navController.navigate(Screen.QueueManagement.route) },
+                    onNavigateToStats = { navController.navigate(Screen.Statistics.route) },
+                    onNavigateToStaff = { navController.navigate(Screen.StaffManagement.route) },
+                    onNavigateToConfig = { navController.navigate(Screen.Config.route) }
                 )
-            }*/
+            }
+            composable(Screen.Statistics.route) {
+                StatisticsScreen(
+                    viewModel = adminViewModel,
+                    onNavigateToDashboard = { navController.navigate(Screen.DashboardDj.route) },
+                    onNavigateToQueue = { navController.navigate(Screen.QueueManagement.route) },
+                    onNavigateToApprovals = { navController.navigate(Screen.Approvals.route) },
+                    onNavigateToStaff = { navController.navigate(Screen.StaffManagement.route) },
+                    onNavigateToConfig = { navController.navigate(Screen.Config.route) }
+                )
+            }
+            composable(Screen.StaffManagement.route) {
+                StaffManagementScreen(
+                    viewModel = adminViewModel,
+                    onNavigateToDashboard = { navController.navigate(Screen.DashboardDj.route) },
+                    onNavigateToQueue = { navController.navigate(Screen.QueueManagement.route) },
+                    onNavigateToApprovals = { navController.navigate(Screen.Approvals.route) },
+                    onNavigateToStats = { navController.navigate(Screen.Statistics.route) },
+                    onNavigateToConfig = { navController.navigate(Screen.Config.route) }
+                )
+            }
+            composable(Screen.Config.route) {
+                ConfigScreen(
+                    viewModel = adminViewModel,
+                    onNavigateToDashboard = { navController.navigate(Screen.DashboardDj.route) },
+                    onNavigateToQueue = { navController.navigate(Screen.QueueManagement.route) },
+                    onNavigateToApprovals = { navController.navigate(Screen.Approvals.route) },
+                    onNavigateToStats = { navController.navigate(Screen.Statistics.route) },
+                    onNavigateToStaff = { navController.navigate(Screen.StaffManagement.route) }
+                )
+            }
         }
     }
 }
