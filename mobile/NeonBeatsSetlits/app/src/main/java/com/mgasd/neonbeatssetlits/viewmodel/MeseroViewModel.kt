@@ -3,6 +3,7 @@ package com.mgasd.neonbeatssetlits.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mgasd.neonbeatssetlits.data.model.LoginRequest
+import com.mgasd.neonbeatssetlits.network.AuthTokenManager
 import com.mgasd.neonbeatssetlits.network.RetrofitClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,11 +43,11 @@ data class MeseroLoginState(
 )
 
 data class MeseroCodeGenerationState(
-    val selectedTable: String? = "T7",
-    val generatedCode: String = "492-817",
-    val secondsRemaining: Int = 299,
+    val selectedTable: String? = null,
+    val generatedCode: String = "",
+    val secondsRemaining: Int = 0,
     val totalSeconds: Int = 300,
-    val tables: List<String> = listOf("T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11"),
+    val tables: List<String> = emptyList(),
     val isGenerating: Boolean = false
 )
 
@@ -85,8 +86,7 @@ class MeseroViewModel : ViewModel() {
     val tablesState: StateFlow<MeseroTablesState> = _tablesState.asStateFlow()
 
     init {
-        loadHomeData()
-        loadTablesData()
+        // No cargar datos hasta estar autenticado para evitar 401
     }
 
     private fun loadHomeData() {
@@ -241,6 +241,11 @@ class MeseroViewModel : ViewModel() {
     fun onLoginClick() {
         if (_uiState.value.isLoading) return
         
+        if (_uiState.value.username.isBlank() || _uiState.value.pin.length != 4) {
+            _uiState.update { it.copy(errorMessage = "Ingrese usuario y PIN de 4 dígitos") }
+            return
+        }
+
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         
         viewModelScope.launch {
@@ -254,13 +259,30 @@ class MeseroViewModel : ViewModel() {
                 )
 
                 if (response.isSuccessful) {
+                    val token = response.body()?.access
+                    if (token.isNullOrBlank()) {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = "No se recibió token de autenticación"
+                            )
+                        }
+                        return@launch
+                    }
+
+                    AuthTokenManager.setAccessToken(token)
+
                     _uiState.update { 
                         it.copy(
                             isLoading = false, 
                             loginSuccess = true 
                         ) 
                     }
+                    // Cargar datos después de login exitoso
+                    loadHomeData()
+                    loadTablesData()
                 } else {
+                    AuthTokenManager.clear()
                     _uiState.update { 
                         it.copy(
                             isLoading = false, 
@@ -269,10 +291,11 @@ class MeseroViewModel : ViewModel() {
                     }
                 }
             } catch (e: Exception) {
+                AuthTokenManager.clear()
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = "Error de conexión: ${e.message}"
+                        errorMessage = "Error de conexión: Verifique su internet"
                     )
                 }
             }
