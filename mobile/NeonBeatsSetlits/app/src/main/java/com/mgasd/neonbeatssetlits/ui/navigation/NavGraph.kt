@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+//import com.mgasd.neonbeatssetlits.ui.screens.gitadmin.*
 import com.mgasd.neonbeatssetlits.ui.screens.cliente.*
 import com.mgasd.neonbeatssetlits.ui.screens.mesero.*
 import com.mgasd.neonbeatssetlits.viewmodel.AdminViewModel
@@ -175,5 +176,37 @@ fun SetupNavGraph(
             }
         }
 
+        // Subgrafo del Administrador
+        navigation(
+            startDestination = Screen.LoginAdmin.route,
+            route = Screen.AdminFlow.route
+        ) {
+            /**
+            composable(Screen.LoginAdmin.route) {
+                AdminLoginScreen(
+                    viewModel = adminViewModel,
+                    onLoginSuccess = {
+                        navController.navigate(Screen.DashboardDj.route) {
+                            popUpTo(Screen.LoginAdmin.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+            composable(Screen.DashboardDj.route) {
+                DashboardDjScreen(
+                    viewModel = adminViewModel
+                )
+            }
+            composable(Screen.QueueManagement.route) {
+                QueueManagementScreen(
+                    viewModel = adminViewModel
+                )
+            }
+            composable(Screen.Approvals.route) {
+                AprobacionesScreen(
+                    viewModel = adminViewModel
+                )
+            }*/
+        }
     }
 }
