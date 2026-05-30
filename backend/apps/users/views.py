@@ -1,12 +1,15 @@
-from rest_framework import viewsets, permissions
-from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
+from rest_framework import permissions, viewsets
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 from .serializers import CustomTokenObtainPairSerializer, UserSerializer
 
 User = get_user_model()
 
+
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
 
 class WaiterViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer

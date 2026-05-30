@@ -11,9 +11,7 @@ class SpotifySearchView(views.APIView):
 
     @extend_schema(
         parameters=[
-            OpenApiParameter(
-                name="q", description="Search query", required=True, type=str
-            ),
+            OpenApiParameter(name="q", description="Search query", required=True, type=str),
         ],
         responses={200: dict, 400: dict, 502: dict},
     )
@@ -38,9 +36,7 @@ class SpotifySearchView(views.APIView):
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except requests.RequestException:
-            return Response(
-                {"detail": "Spotify API error."}, status=status.HTTP_502_BAD_GATEWAY
-            )
+            return Response({"detail": "Spotify API error."}, status=status.HTTP_502_BAD_GATEWAY)
 
 
 class SpotifyTrackView(views.APIView):
@@ -61,6 +57,4 @@ class SpotifyTrackView(views.APIView):
         except ValueError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except requests.RequestException:
-            return Response(
-                {"detail": "Spotify API error."}, status=status.HTTP_502_BAD_GATEWAY
-            )
+            return Response({"detail": "Spotify API error."}, status=status.HTTP_502_BAD_GATEWAY)

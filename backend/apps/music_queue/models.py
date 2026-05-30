@@ -3,9 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class PinCode(models.Model):
-    tenant = models.ForeignKey(
-        "tenants.Tenant", on_delete=models.CASCADE, related_name="pin_codes"
-    )
+    tenant = models.ForeignKey("tenants.Tenant", on_delete=models.CASCADE, related_name="pin_codes")
     code = models.CharField(max_length=10)
     credits = models.PositiveIntegerField(default=1)
     is_used = models.BooleanField(default=False)
@@ -30,9 +28,7 @@ class PinCode(models.Model):
 
 
 class Session(models.Model):
-    tenant = models.ForeignKey(
-        "tenants.Tenant", on_delete=models.CASCADE, related_name="sessions"
-    )
+    tenant = models.ForeignKey("tenants.Tenant", on_delete=models.CASCADE, related_name="sessions")
     table = models.ForeignKey(
         "venues.Table", on_delete=models.SET_NULL, null=True, related_name="sessions"
     )
@@ -64,12 +60,8 @@ class Request(models.Model):
         PLAYED = "PLAYED", _("Played")
         SKIPPED = "SKIPPED", _("Skipped")
 
-    tenant = models.ForeignKey(
-        "tenants.Tenant", on_delete=models.CASCADE, related_name="requests"
-    )
-    session = models.ForeignKey(
-        Session, on_delete=models.CASCADE, related_name="requests"
-    )
+    tenant = models.ForeignKey("tenants.Tenant", on_delete=models.CASCADE, related_name="requests")
+    session = models.ForeignKey(Session, on_delete=models.CASCADE, related_name="requests")
     track = models.ForeignKey(Track, on_delete=models.CASCADE, related_name="requests")
     status = models.CharField(
         max_length=50, choices=StatusChoices.choices, default=StatusChoices.PENDING
