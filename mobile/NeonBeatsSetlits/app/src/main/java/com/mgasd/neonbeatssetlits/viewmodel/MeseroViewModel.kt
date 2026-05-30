@@ -41,6 +41,15 @@ data class MeseroLoginState(
     val errorMessage: String? = null
 )
 
+data class MeseroCodeGenerationState(
+    val selectedTable: String? = "T7",
+    val generatedCode: String = "492-817",
+    val secondsRemaining: Int = 299,
+    val totalSeconds: Int = 300,
+    val tables: List<String> = listOf("T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11"),
+    val isGenerating: Boolean = false
+)
+
 class MeseroViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(MeseroLoginState())
@@ -48,6 +57,9 @@ class MeseroViewModel : ViewModel() {
 
     private val _homeState = MutableStateFlow(MeseroHomeState())
     val homeState: StateFlow<MeseroHomeState> = _homeState.asStateFlow()
+
+    private val _codeGenState = MutableStateFlow(MeseroCodeGenerationState())
+    val codeGenState: StateFlow<MeseroCodeGenerationState> = _codeGenState.asStateFlow()
 
     init {
         loadHomeData()
@@ -152,13 +164,23 @@ class MeseroViewModel : ViewModel() {
                     credits = 1, // Default credits
                     is_used = false,
                     created_by = 0,
-                    table = null,
+                    table = _codeGenState.value.selectedTable?.replace("T", "")?.toIntOrNull(),
                     created_at = "",
                     used_at = null
                 )
                 
                 val response = RetrofitClient.instance.createPinCode(dummyPin)
                 if (response.isSuccessful) {
+                    val newPin = response.body()
+                    if (newPin != null) {
+                        _codeGenState.update { 
+                            it.copy(
+                                generatedCode = newPin.code,
+                                selectedTable = "T${newPin.table ?: ""}",
+                                secondsRemaining = 300
+                            )
+                        }
+                    }
                     // Recargamos el historial para mostrar el nuevo código
                     loadHomeData()
                 } else {
@@ -168,6 +190,14 @@ class MeseroViewModel : ViewModel() {
                 _homeState.update { it.copy(isLoading = false, errorMessage = e.message) }
             }
         }
+    }
+
+    fun onTableSelect(tableId: String) {
+        _codeGenState.update { it.copy(selectedTable = tableId) }
+    }
+
+    fun onGenerateNewCode() {
+        onGenerateCodeClick()
     }
 
     fun resetLoginState() {
