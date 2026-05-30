@@ -43,7 +43,103 @@ data class PendingApprovalItem(
     val thumbnailUrl: String? = null
 )
 
+data class TableActivity(
+    val id: String,
+    val status: AdminTableStatus
+)
+
+enum class AdminTableStatus {
+    ACTIVE, WARNING, AVAILABLE, ERROR
+}
+
+data class WaiterProductivity(
+    val id: String,
+    val rank: String,
+    val name: String,
+    val efficiency: Float,
+    val sales: String,
+    val thumbnailUrl: String? = null
+)
+
+data class StatisticsUiState(
+    val occupancy: Int = 85,
+    val occupancyTrend: Int = 12,
+    val avgTime: Int = 42,
+    val avgTimeTrend: Int = 5,
+    val openTickets: Int = 24,
+    val totalTickets: Int = 28,
+    val orderFlow: List<Float> = listOf(0.2f, 0.4f, 0.3f, 0.6f, 0.85f, 0.5f, 0.7f, 0.3f),
+    val tableMap: List<TableActivity> = listOf(
+        TableActivity("T1", AdminTableStatus.ACTIVE),
+        TableActivity("T2", AdminTableStatus.ACTIVE),
+        TableActivity("T3", AdminTableStatus.WARNING),
+        TableActivity("T4", AdminTableStatus.AVAILABLE),
+        TableActivity("T5", AdminTableStatus.AVAILABLE),
+        TableActivity("T6", AdminTableStatus.ACTIVE),
+        TableActivity("T7", AdminTableStatus.AVAILABLE),
+        TableActivity("T8", AdminTableStatus.ERROR)
+    ),
+    val topWaiters: List<WaiterProductivity> = listOf(
+        WaiterProductivity("1", "01", "Marcus T.", 0.92f, "$1,240"),
+        WaiterProductivity("2", "02", "Elena V.", 0.78f, "$980")
+    ),
+    val selectedTab: Int = 0 // 0 for Tables, 1 for Waiters
+)
+
+enum class StaffStatus {
+    ACTIVE, INACTIVE
+}
+
+data class StaffMember(
+    val id: String,
+    val name: String,
+    val employeeId: String,
+    val status: StaffStatus,
+    val currentTables: String? = null,
+    val shiftTime: String? = null,
+    val lastShift: String? = null,
+    val thumbnailUrl: String? = null
+)
+
+enum class LogStatus {
+    SUCCESS, WARNING, SYSTEM
+}
+
+data class ActivityLog(
+    val id: String,
+    val timestamp: String,
+    val staffMember: String,
+    val action: String,
+    val table: String,
+    val status: LogStatus
+)
+
+data class StaffManagementUiState(
+    val staffMembers: List<StaffMember> = emptyList(),
+    val activityLogs: List<ActivityLog> = emptyList()
+)
+
+data class CatalogItem(
+    val id: String,
+    val title: String,
+    val artist: String,
+    val genre: String,
+    val isActive: Boolean
+)
+
+data class ConfigUiState(
+    val barName: String = "Neon Beats Underground",
+    val allowYouTube: Boolean = true,
+    val explicitFilter: Boolean = false,
+    val initialCredits: Int = 5,
+    val requestExpiryMinutes: Int = 30,
+    val localCatalog: List<CatalogItem> = emptyList()
+)
+
 class AdminViewModel : ViewModel() {
+    private val _mesaNumero = MutableStateFlow("04")
+    val mesaNumero: StateFlow<String> = _mesaNumero.asStateFlow()
+
     private val _uiState = MutableStateFlow(AdminLoginUiState())
     val uiState: StateFlow<AdminLoginUiState> = _uiState.asStateFlow()
 
@@ -75,6 +171,30 @@ class AdminViewModel : ViewModel() {
         )
     ))
     val pendingApprovals: StateFlow<List<PendingApprovalItem>> = _pendingApprovals.asStateFlow()
+
+    private val _statisticsState = MutableStateFlow(StatisticsUiState())
+    val statisticsState: StateFlow<StatisticsUiState> = _statisticsState.asStateFlow()
+
+    private val _staffState = MutableStateFlow(StaffManagementUiState(
+        staffMembers = listOf(
+            StaffMember("1", "ELIAS V.", "#8821", StaffStatus.ACTIVE, currentTables = "04", shiftTime = "04:22:10"),
+            StaffMember("2", "SARAH K.", "#7743", StaffStatus.INACTIVE, lastShift = "YESTERDAY")
+        ),
+        activityLogs = listOf(
+            ActivityLog("1", "23:45:12", "ELIAS V.", "Closed Order #9928 - Payment Processed", "T-04", LogStatus.SUCCESS),
+            ActivityLog("2", "23:30:05", "MARCUS", "Voided Item: Neon Margarita", "T-12", LogStatus.WARNING),
+            ActivityLog("3", "22:15:00", "SARAH K.", "Shift Ended manually by Admin", "--", LogStatus.SYSTEM)
+        )
+    ))
+    val staffState: StateFlow<StaffManagementUiState> = _staffState.asStateFlow()
+
+    private val _configState = MutableStateFlow(ConfigUiState(
+        localCatalog = listOf(
+            CatalogItem("1", "Cyberpunk Overture", "Neon Syndicate", "Synthwave", true),
+            CatalogItem("2", "Midnight Rider", "Dark Alleys", "Dark Rock", false)
+        )
+    ))
+    val configState: StateFlow<ConfigUiState> = _configState.asStateFlow()
 
     fun onUsernameChange(username: String) {
         _uiState.value = _uiState.value.copy(username = username)
@@ -129,5 +249,59 @@ class AdminViewModel : ViewModel() {
 
     fun onRejectRequest(id: String) {
         _pendingApprovals.value = _pendingApprovals.value.filter { it.id != id }
+    }
+
+    fun onSeeAllWaitersClick() {
+        // Navigate or show more
+    }
+
+    fun onTabChange(index: Int) {
+        _statisticsState.value = _statisticsState.value.copy(selectedTab = index)
+    }
+
+    fun onAddStaffClick() {
+        // Logic to add staff
+    }
+
+    fun onFilterStaffClick() {
+        // Logic to filter staff
+    }
+
+    fun onDisableStaff(staffId: String) {
+        _staffState.value = _staffState.value.copy(
+            staffMembers = _staffState.value.staffMembers.map {
+                if (it.id == staffId) it.copy(status = StaffStatus.INACTIVE) else it
+            }
+        )
+    }
+
+    fun onBarNameChange(name: String) {
+        _configState.value = _configState.value.copy(barName = name)
+    }
+
+    fun onToggleYouTube(enabled: Boolean) {
+        _configState.value = _configState.value.copy(allowYouTube = enabled)
+    }
+
+    fun onToggleExplicitFilter(enabled: Boolean) {
+        _configState.value = _configState.value.copy(explicitFilter = enabled)
+    }
+
+    fun updateInitialCredits(delta: Int) {
+        val newVal = (_configState.value.initialCredits + delta).coerceIn(1, 99)
+        _configState.value = _configState.value.copy(initialCredits = newVal)
+    }
+
+    fun updateExpiryMinutes(delta: Int) {
+        val newVal = (_configState.value.requestExpiryMinutes + delta).coerceIn(5, 120)
+        _configState.value = _configState.value.copy(requestExpiryMinutes = newVal)
+    }
+
+    fun onImportCsv() {
+        // Logic to import CSV
+    }
+
+    fun onSaveConfig() {
+        // Logic to save config
     }
 }

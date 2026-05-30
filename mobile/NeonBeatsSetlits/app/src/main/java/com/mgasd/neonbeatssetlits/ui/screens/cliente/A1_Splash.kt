@@ -30,6 +30,7 @@ import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 fun A1_SplashScreen(
     onNavigateToScanner: () -> Unit,
     onNavigateToMeseroLogin: () -> Unit,
+    onNavigateToAdminLogin: () -> Unit,
 ) {
     // Animación de pulso para el texto Neón
     val infiniteTransition = rememberInfiniteTransition(label = "NeonPulse")
@@ -189,6 +190,24 @@ fun A1_SplashScreen(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Botón de Acceso Admin (DJ)
+                TextButton(
+                    onClick = onNavigateToAdminLogin,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "CONTROL DE DJ / ADMIN",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Normal,
+                            letterSpacing = 2.sp,
+                            textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                        ),
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+
                 Text(
                     text = "REQUIERE ACCESO A LA CÁMARA",
                     style = MaterialTheme.typography.bodySmall.copy(
@@ -209,7 +228,8 @@ fun A1_SplashPreview() {
     NeonBeatsTheme {
         A1_SplashScreen(
             onNavigateToScanner = {},
-            onNavigateToMeseroLogin = {}
+            onNavigateToMeseroLogin = {},
+            onNavigateToAdminLogin = {}
         )
     }
 }
