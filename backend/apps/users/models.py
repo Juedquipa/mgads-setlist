@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 def _generate_staff_pin(user_model):
     while True:
-        pin = get_random_string(6, allowed_chars="0123456789")
+        pin = get_random_string(4, allowed_chars="0123456789")
         if not user_model.objects.filter(staff_pin=pin).exists():
             return pin
 
@@ -16,7 +16,7 @@ class User(AbstractUser):
         ADMIN = "ADMIN", _("Admin")
         WAITER = "WAITER", _("Waiter")
 
-    staff_pin = models.CharField(max_length=6, unique=True, blank=True, null=True)
+    staff_pin = models.CharField(max_length=4, unique=True, blank=True, null=True)
     role = models.CharField(max_length=50, choices=RoleChoices.choices, default=RoleChoices.WAITER)
     tenant = models.ForeignKey(
         "tenants.Tenant",

@@ -16,6 +16,7 @@ This file documents recommended agent usage and repository-specific guidelines. 
 
 - **No-Friction Access:** Clients scan a table QR code to join without creating an account.
 - **Credit System:** Waitstaff generates temporary 6-digit PINs tied to drink/food orders. Clients enter the PIN to earn "song request credits".
+- **Staff Login PIN:** Staff users also have a persistent 4-digit staff PIN that can be used as an alternate login method alongside username/password. Do not confuse it with client credit PINs.
 - **Spotify Integration:** Search and retrieve song metadata (title, artist, album, 30s preview) leveraging the public Spotify Web API.
 - **Real-time Queue & Control:** A live, synced playback queue. The DJ can reorder, clear, or play/pause the queue.
 - **Quality Control:** DJs pre-approve a internal "Bar Catalog". If clients propose songs outside the catalog, the DJ must review and approve/reject them before they enter the queue.
@@ -23,7 +24,7 @@ This file documents recommended agent usage and repository-specific guidelines. 
 **System Roles:**
 
 1. **Customer:** Scans the table QR, enters waitstaff PIN to unlock credits, searches for songs, requests tracks, and views the live queue.
-2. **Waiter (Waitstaff):** Authenticated staff. Generates 6-digit PINs linked to tables to grant song request credits.
+2. **Waiter (Waitstaff):** Authenticated staff. Logs in with username/password or staff PIN, and generates 6-digit credit PINs linked to tables to grant song request credits.
 3. **Admin / DJ:** Authenticated owner/DJ. Manages the live queue, approves/rejects external song suggestions, oversees waitstaff, and configures bar settings.
 
 ## Tech Stack (high level)

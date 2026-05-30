@@ -37,9 +37,18 @@ class StaffPinLoginRequestSerializer(serializers.Serializer):
 
 
 class StaffLoginRequestSerializer(serializers.Serializer):
-    username = serializers.CharField(required=False, help_text="Staff username.")
-    password = serializers.CharField(required=False, help_text="Staff password.", write_only=True)
-    pin = serializers.CharField(required=False, help_text="Staff login PIN.")
+    username = serializers.CharField(
+        help_text="Staff username. Required for both PIN and password login.",
+    )
+    password = serializers.CharField(
+        required=False,
+        help_text="Staff password. Provide this when logging in with username/password.",
+        write_only=True,
+    )
+    pin = serializers.CharField(
+        required=False,
+        help_text="Persistent 4-digit staff PIN. Provide this when logging in with PIN.",
+    )
 
 
 class TokenPairResponseSerializer(serializers.Serializer):

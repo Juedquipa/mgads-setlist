@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate, get_user_model
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.utils import OpenApiExample, extend_schema, extend_schema_view
 from rest_framework import permissions, status, views, viewsets
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -39,19 +39,50 @@ class StaffPinLoginView(views.APIView):
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(
-        summary="Staff log in with a PIN or password",
+        summary="Staff log in with username plus PIN or password",
         description=(
-            "Authenticates a staff user either with a persistent staff PIN or with "
-            "username and password, then returns a refresh token plus a short-lived access "
-            "token. The access token includes custom role and tenant claims."
+            "Authenticates a staff user with username plus either a persistent staff PIN "
+            "or a password, then returns a refresh token plus a short-lived access token. "
+            "The access token includes custom role and tenant claims."
         ),
         request=StaffLoginRequestSerializer,
+        examples=[
+            OpenApiExample(
+                "Staff PIN login",
+                value={"username": "staff@example.com", "pin": "1234"},
+                request_only=True,
+            ),
+            OpenApiExample(
+                "Staff username/password login",
+                value={"username": "staff@example.com", "password": "secret"},
+                request_only=True,
+            ),
+        ],
         responses={200: TokenPairResponseSerializer, 401: ErrorResponseSerializer},
     )
     def post(self, request, *args, **kwargs):
+        username = request.data.get("username")
         pin = request.data.get("pin")
+        password = request.data.get("password")
+
+        if not username:
+            return Response(
+                {"detail": "Username is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        has_pin = bool(pin)
+        has_password = bool(password)
+
+        if has_pin == has_password:
+            return Response(
+                {"detail": "Provide either pin or password, not both"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if pin:
             user = User.objects.filter(
+                username=username,
                 staff_pin=pin,
                 is_active=True,
                 role__in=[User.RoleChoices.ADMIN, User.RoleChoices.WAITER],
@@ -62,14 +93,6 @@ class StaffPinLoginView(views.APIView):
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
         else:
-            username = request.data.get("username")
-            password = request.data.get("password")
-            if not username or not password:
-                return Response(
-                    {"detail": "Provide either pin or username and password"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
             user = authenticate(
                 request,
                 username=username,
