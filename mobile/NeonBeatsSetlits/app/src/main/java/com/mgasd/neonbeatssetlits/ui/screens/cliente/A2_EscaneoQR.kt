@@ -35,9 +35,19 @@ import com.mgasd.neonbeatssetlits.viewmodel.ClienteViewModel
 @Composable
 fun A2_EscaneoQR(
     viewModel: ClienteViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onMesaIdentificada: () -> Unit
 ) {
     val isFlashlightOn by viewModel.isFlashlightOn.collectAsState()
+    val session by viewModel.session.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
+
+    LaunchedEffect(session) {
+        if (session != null) {
+            onMesaIdentificada()
+        }
+    }
 
     A2_EscaneoQRContent(
         isFlashlightOn = isFlashlightOn,
@@ -135,7 +145,7 @@ fun A2_EscaneoQRContent(
                             tint = Color.White
                         )
                     }
-                    
+
                     Text(
                         text = "NEON BEATS",
                         style = MaterialTheme.typography.displaySmall.copy(
@@ -159,6 +169,8 @@ fun A2_EscaneoQRContent(
                             tint = if (isFlashlightOn) MaterialTheme.colorScheme.primary else Color.White
                         )
                     }
+
+                    Spacer(modifier = Modifier.size(40.dp))
                 }
 
                 Spacer(modifier = Modifier.weight(0.4f))
@@ -209,6 +221,26 @@ fun A2_EscaneoQRContent(
                         )
                     )
                 }
+            }
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.7f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = NeonGreen)
+                }
+            }
+
+            error?.let {
+                Text(
+                    text = it,
+                    color = Color.Red,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

@@ -36,8 +36,17 @@ class ClienteViewModel : ViewModel() {
     private val _isFlashlightOn = MutableStateFlow(false)
     val isFlashlightOn = _isFlashlightOn.asStateFlow()
 
-    private val _mesaNumero = MutableStateFlow("04")
+    private val _mesaNumero = MutableStateFlow("7")
     val mesaNumero = _mesaNumero.asStateFlow()
+
+    private val _session = MutableStateFlow<Session?>(null)
+    val session = _session.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
 
     private val _pinCode = MutableStateFlow("")
     val pinCode = _pinCode.asStateFlow()
