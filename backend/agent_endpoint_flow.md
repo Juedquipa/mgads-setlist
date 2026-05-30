@@ -126,7 +126,7 @@ This document describes the main backend API flow exposed by the project and how
 ### `GET /api/tables/{id}/session/`
 
 - Returns the active client session for a given table if one exists.
-- Returns `404` if the table does not currently have an active session.
+- If the table does not currently have an active session, a new one is created and returned.
 
 ## Waiters flow
 

@@ -38,6 +38,7 @@ sealed class Screen(val route: String) {
     object LoginWaiter : Screen("login_mesero")
     object HomeWaiter : Screen("home_mesero")
     object GenerateCode : Screen("generacion_codigo")
+    object ActiveTables : Screen("mesas_activas")
 
     // Admin Screens
     object LoginAdmin : Screen("login_admin")
@@ -164,6 +165,9 @@ fun SetupNavGraph(
                     onNavigateToGenerateCode = {
                         navController.navigate(Screen.GenerateCode.route)
                     },
+                    onNavigateToTables = {
+                        navController.navigate(Screen.ActiveTables.route)
+                    },
                     onNavigateToProfile = { /* TODO */ },
                     onNavigateToRequests = { /* TODO */ }
                 )
@@ -172,6 +176,19 @@ fun SetupNavGraph(
                 B3_GeneracionDeCodigoScreen(
                     viewModel = meseroViewModel,
                     onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Screen.ActiveTables.route) {
+                B4_MesasActivasScreen(
+                    viewModel = meseroViewModel,
+                    onNavigateToHome = {
+                        navController.navigate(Screen.HomeWaiter.route) {
+                            popUpTo(Screen.HomeWaiter.route) { inclusive = true }
+                        }
+                    },
+                    onNavigateToRequests = { /* TODO */ },
+                    onNavigateToBills = { /* TODO */ },
+                    onNavigateToProfile = { /* TODO */ }
                 )
             }
         }

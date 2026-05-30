@@ -28,9 +28,9 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -46,7 +46,8 @@ fun B2_HomeMeseroScreen(
     viewModel: MeseroViewModel,
     onNavigateToProfile: () -> Unit,
     onNavigateToRequests: () -> Unit,
-    onNavigateToGenerateCode: () -> Unit
+    onNavigateToGenerateCode: () -> Unit,
+    onNavigateToTables: () -> Unit
 ) {
     val homeState by viewModel.homeState.collectAsStateWithLifecycle()
 
@@ -80,7 +81,7 @@ fun B2_HomeMeseroScreen(
                             modifier = Modifier.padding(end = 16.dp)
                         ) {
                             Text(
-                                "TABLE 04",
+                                "STAFF VIEW",
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
                                 color = MaterialTheme.colorScheme.primary
@@ -93,7 +94,13 @@ fun B2_HomeMeseroScreen(
                 )
             },
             bottomBar = {
-                MeseroBottomNavigation()
+                MeseroBottomNavigation(
+                    onHomeClick = { /* Already here */ },
+                    onTablesClick = onNavigateToTables,
+                    onRequestsClick = onNavigateToRequests,
+                    onBillsClick = { /* TODO */ },
+                    onProfileClick = onNavigateToProfile
+                )
             },
             containerColor = Color.Transparent // Permitimos ver el fondo de scanlines
         ) { paddingValues ->
@@ -426,7 +433,13 @@ fun CodeHistoryListItem(item: CodeHistoryItem) {
 }
 
 @Composable
-fun MeseroBottomNavigation() {
+fun MeseroBottomNavigation(
+    onHomeClick: () -> Unit,
+    onTablesClick: () -> Unit,
+    onRequestsClick: () -> Unit,
+    onBillsClick: () -> Unit,
+    onProfileClick: () -> Unit
+) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier
@@ -445,7 +458,7 @@ fun MeseroBottomNavigation() {
         val items = listOf(
             Triple(Icons.Default.Home, "HOME", true),
             Triple(Icons.Default.QueueMusic, "REQUESTS", false),
-            Triple(Icons.Default.RestaurantMenu, "MENU", false),
+            Triple(Icons.Default.RestaurantMenu, "TABLES", false),
             Triple(Icons.Default.ReceiptLong, "BILLS", false),
             Triple(Icons.Default.Person, "PROFILE", false)
         )
@@ -453,7 +466,15 @@ fun MeseroBottomNavigation() {
         items.forEach { (icon, label, isSelected) ->
             NavigationBarItem(
                 selected = isSelected,
-                onClick = { /* Nav */ },
+                onClick = { 
+                    when(label) {
+                        "HOME" -> onHomeClick()
+                        "TABLES" -> onTablesClick()
+                        "REQUESTS" -> onRequestsClick()
+                        "BILLS" -> onBillsClick()
+                        "PROFILE" -> onProfileClick()
+                    }
+                },
                 icon = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
@@ -491,7 +512,8 @@ fun B2_HomeMeseroScreenPreview() {
             meseroViewModel,
             onNavigateToProfile = {},
             onNavigateToRequests = {},
-            onNavigateToGenerateCode = {}
+            onNavigateToGenerateCode = {},
+            onNavigateToTables = {}
         )
     }
 }

@@ -56,6 +56,9 @@ interface ApiService {
     @POST("api/tables/")
     suspend fun createTable(@Body table: Table): Response<Table>
 
+    @DELETE("api/tables/{id}/")
+    suspend fun deleteTable(@Path("id") id: Int): Response<Unit>
+
     @GET("api/tables/{id}/session/")
     suspend fun getTableActiveSession(@Path("id") tableId: String): Response<Session>
 

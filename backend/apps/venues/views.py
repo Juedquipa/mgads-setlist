@@ -1,4 +1,5 @@
-from apps.music_queue.serializers import ErrorResponseSerializer, SessionSerializer
+from apps.music_queue.serializers import SessionSerializer
+from django.utils.crypto import get_random_string
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -59,17 +60,22 @@ class TableViewSet(viewsets.ModelViewSet):
 
     @extend_schema(
         summary="Get the active session for a table",
-        description=("Returns the active client session for the requested table, if one exists."),
-        responses={200: SessionSerializer, 404: ErrorResponseSerializer},
+        description=(
+            "Returns the active client session for the requested table. If the table does "
+            "not currently have an active session, a new one is created and returned."
+        ),
+        responses={200: SessionSerializer},
     )
     @action(detail=True, methods=["get"])
     def session(self, request, pk=None):
         table = self.get_object()
         active_session = table.sessions.filter(is_active=True).first()
-        if not active_session:
-            return Response({"detail": "No active session"}, status=status.HTTP_404_NOT_FOUND)
 
-        # We would serialize the session here. For now returning a placeholder
-        from apps.music_queue.serializers import SessionSerializer
+        if not active_session:
+            active_session = table.sessions.create(
+                tenant=table.tenant,
+                token=get_random_string(64),
+                credits_balance=0,
+            )
 
         return Response(SessionSerializer(active_session).data)

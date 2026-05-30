@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
@@ -19,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontFamily
@@ -41,6 +43,8 @@ fun B3_GeneracionDeCodigoScreen(
     onBack: () -> Unit
 ) {
     val state by viewModel.codeGenState.collectAsStateWithLifecycle()
+    var showCreateTableDialog by remember { mutableStateOf(false) }
+    var newTableName by remember { mutableStateOf("") }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -65,6 +69,17 @@ fun B3_GeneracionDeCodigoScreen(
                     containerColor = Color.Transparent
                 )
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showCreateTableDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = androidx.compose.foundation.shape.CircleShape,
+                modifier = Modifier.shadow(12.dp, androidx.compose.foundation.shape.CircleShape, spotColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Table")
+            }
         }
     ) { paddingValues ->
         Column(
@@ -134,7 +149,7 @@ fun B3_GeneracionDeCodigoScreen(
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            "CÓDIGO DE ACCESO",
+                            "CÓDIGO QR DE MESA",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             letterSpacing = 2.sp
@@ -142,7 +157,7 @@ fun B3_GeneracionDeCodigoScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
-                        // QR Code Display
+                        // QR Code Display - Ahora usa el token real de la mesa
                         QRCodeImage(
                             content = state.generatedCode,
                             modifier = Modifier.size(200.dp)
@@ -151,11 +166,11 @@ fun B3_GeneracionDeCodigoScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = state.generatedCode,
+                            text = if (state.generatedCode.isNotEmpty()) "TOKEN: ${state.generatedCode.take(8)}..." else "SIN TOKEN",
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Black,
-                                letterSpacing = 4.sp
+                                letterSpacing = 1.sp
                             ),
                             color = MaterialTheme.colorScheme.tertiary
                         )
@@ -255,6 +270,59 @@ fun B3_GeneracionDeCodigoScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
         }
+    }
+
+    if (showCreateTableDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showCreateTableDialog = false
+                newTableName = ""
+            },
+            title = {
+                Text(text = "CREATE TABLE")
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Ingrese el nombre de la mesa para crearla en la API.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = newTableName,
+                        onValueChange = { newTableName = it },
+                        singleLine = true,
+                        label = { Text("Mesa") },
+                        placeholder = { Text("Ej. Terraza 1") }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val tableName = newTableName.trim()
+                        if (tableName.isNotEmpty()) {
+                            viewModel.createTable(tableName)
+                            showCreateTableDialog = false
+                            newTableName = ""
+                        }
+                    },
+                    enabled = newTableName.isNotBlank()
+                ) {
+                    Text("CREATE")
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showCreateTableDialog = false
+                        newTableName = ""
+                    }
+                ) {
+                    Text("CANCEL")
+                }
+            }
+        )
     }
 }
 

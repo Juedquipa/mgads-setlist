@@ -57,8 +57,10 @@ enum class TableStatus {
 
 data class ActiveTable(
     val id: String,
+    val numericId: Int,
     val status: TableStatus,
     val statusLabel: String,
+    val qrCodeToken: String = "",
     val pendingOrders: Int = 0,
     val queuedRequests: Int = 0,
     val isPlaying: Boolean = false
@@ -178,6 +180,7 @@ class MeseroViewModel : ViewModel() {
                         activeTables.add(
                             ActiveTable(
                                 id = "T${table.id}",
+                                numericId = table.id,
                                 status = status,
                                 statusLabel = when(status) {
                                     TableStatus.SESSION -> "In Session"
@@ -185,9 +188,10 @@ class MeseroViewModel : ViewModel() {
                                     TableStatus.EMPTY -> "Empty"
                                     TableStatus.CALLING -> "Calling Staff"
                                 },
-                                pendingOrders = 0, // El API actual no parece retornar órdenes
-                                queuedRequests = if (session != null) 0 else 0, // Podríamos llamar a /api/client/requests/ si tuviéramos el token
-                                isPlaying = false // Simulado por ahora
+                                qrCodeToken = table.qr_code_token ?: "",
+                                pendingOrders = 0,
+                                queuedRequests = 0,
+                                isPlaying = false
                             )
                         )
                     }
@@ -220,6 +224,18 @@ class MeseroViewModel : ViewModel() {
                     created_at = ""
                 )
                 val response = RetrofitClient.instance.createTable(newTable)
+                if (response.isSuccessful) {
+                    loadTablesData()
+                }
+            } catch (e: Exception) {}
+        }
+    }
+
+    fun deleteTable(tableId: String) {
+        val numericId = tableId.replace("T", "").toIntOrNull() ?: return
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.deleteTable(numericId)
                 if (response.isSuccessful) {
                     loadTablesData()
                 }
@@ -346,11 +362,34 @@ class MeseroViewModel : ViewModel() {
     }
 
     fun onTableSelect(tableId: String) {
-        _codeGenState.update { it.copy(selectedTable = tableId) }
+        val table = _tablesState.value.tables.find { it.id == tableId }
+        _codeGenState.update { 
+            it.copy(
+                selectedTable = tableId,
+                generatedCode = table?.qrCodeToken ?: ""
+            ) 
+        }
     }
 
     fun onGenerateNewCode() {
-        onGenerateCodeClick()
+        viewModelScope.launch {
+            try {
+                // Re-cargamos los datos para obtener el token más reciente del servidor
+                val response = RetrofitClient.instance.listTables()
+                if (response.isSuccessful) {
+                    val tables = response.body() ?: emptyList()
+                    val selectedId = _codeGenState.value.selectedTable
+                    val updatedTable = tables.find { "T${it.id}" == selectedId }
+                    
+                    _codeGenState.update { 
+                        it.copy(
+                            generatedCode = updatedTable?.qr_code_token ?: ""
+                        )
+                    }
+                    loadTablesData() // Refresh general
+                }
+            } catch (e: Exception) {}
+        }
     }
 
     fun onAcknowledgeTable(tableId: String) {

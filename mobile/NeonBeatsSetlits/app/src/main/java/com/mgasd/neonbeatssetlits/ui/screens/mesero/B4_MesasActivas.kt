@@ -29,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Chair
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.NotificationsActive
@@ -88,91 +89,94 @@ import com.mgasd.neonbeatssetlits.viewmodel.TableStatus
 @Composable
 fun B4_MesasActivasScreen(
     viewModel: MeseroViewModel,
-    onNavigateBack: () -> Unit
+    onNavigateToHome: () -> Unit,
+    onNavigateToRequests: () -> Unit,
+    onNavigateToBills: () -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     val state by viewModel.tablesState.collectAsStateWithLifecycle()
     var showCreateTableDialog by remember { mutableStateOf(false) }
     var newTableName by remember { mutableStateOf("") }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Scanlines industrial overlay
-        Canvas(modifier = Modifier
-            .fillMaxSize()
-            .alpha(0.05f)) {
-            val scanlineSpacing = 4.dp.toPx()
-            for (y in 0 until size.height.toInt() step scanlineSpacing.toInt()) {
-                drawLine(
-                    color = Color.White,
-                    start = Offset(0f, y.toFloat()),
-                    end = Offset(size.width, y.toFloat()),
-                    strokeWidth = 1.dp.toPx()
-                )
-            }
-        }
-
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        Text(
-                            "NEON BEATS SETLIST",
-                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { /* Drawer */ }) {
-                            Icon(
-                                Icons.Default.Menu,
-                                contentDescription = "Menu",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    },
-                    actions = {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceVariant,
-                            shape = RoundedCornerShape(2.dp),
-                            border = androidx.compose.foundation.BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.outlineVariant
-                            )
-                        ) {
-                            Text(
-                                "STAFF VIEW",
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
-                )
-            },
-            bottomBar = {
-                StaffBottomNavigation()
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { showCreateTableDialog = true },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
-                    shape = CircleShape,
-                    modifier = Modifier.shadow(
-                        12.dp,
-                        CircleShape,
-                        spotColor = MaterialTheme.colorScheme.primary
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        "NEON BEATS SETLIST",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.primary
                     )
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
+                },
+                navigationIcon = {
+                    IconButton(onClick = { /* Drawer */ }) {
+                        Icon(
+                            Icons.Default.Menu,
+                            contentDescription = "Menu",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                actions = {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        shape = RoundedCornerShape(2.dp),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant
+                        )
+                    ) {
+                        Text(
+                            "STAFF VIEW",
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+            )
+        },
+        bottomBar = {
+            StaffBottomNavigation(
+                onHomeClick = onNavigateToHome,
+                onRequestsClick = onNavigateToRequests,
+                onTablesClick = { /* Already here */ },
+                onBillsClick = onNavigateToBills,
+                onProfileClick = onNavigateToProfile
+            )
+        },
+        floatingActionButton = {
+            // El FAB se define aquí, dentro del slot oficial del Scaffold
+            FloatingActionButton(
+                onClick = { showCreateTableDialog = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = CircleShape,
+                modifier = Modifier.shadow(12.dp, CircleShape, spotColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add Table")
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            // Scanlines industrial overlay (como fondo del contenido)
+            Canvas(modifier = Modifier.fillMaxSize().alpha(0.05f)) {
+                val scanlineSpacing = 4.dp.toPx()
+                for (y in 0 until size.height.toInt() step scanlineSpacing.toInt()) {
+                    drawLine(
+                        color = Color.White,
+                        start = Offset(0f, y.toFloat()),
+                        end = Offset(size.width, y.toFloat()),
+                        strokeWidth = 1.dp.toPx()
+                    )
                 }
-            },
-            containerColor = MaterialTheme.colorScheme.background
-        ) { paddingValues ->
+            }
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
                     .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
@@ -220,7 +224,7 @@ fun B4_MesasActivasScreen(
                     )
                 }
 
-                // Table Grid (Mocked as items in LazyColumn for simplicity)
+                // Table Grid
                 items(state.tables) { table ->
                     TableCard(
                         table = table,
@@ -228,66 +232,67 @@ fun B4_MesasActivasScreen(
                             if (table.status == TableStatus.CALLING) viewModel.onAcknowledgeTable(
                                 table.id
                             )
-                        }
+                        },
+                        onDelete = { viewModel.deleteTable(table.id) }
                     )
                 }
 
-                item { Spacer(modifier = Modifier.height(80.dp)) }
+                item { Spacer(modifier = Modifier.height(100.dp)) }
             }
         }
+    }
 
-        if (showCreateTableDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    showCreateTableDialog = false
-                    newTableName = ""
-                },
-                title = {
-                    Text(text = "CREATE TABLE")
-                },
-                text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(
-                            text = "Ingrese el nombre de la mesa para crearla en la API.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        OutlinedTextField(
-                            value = newTableName,
-                            onValueChange = { newTableName = it },
-                            singleLine = true,
-                            label = { Text("Mesa") },
-                            placeholder = { Text("Ej. Terraza 1") }
-                        )
-                    }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            val tableName = newTableName.trim()
-                            if (tableName.isNotEmpty()) {
-                                viewModel.createTable(tableName)
-                                showCreateTableDialog = false
-                                newTableName = ""
-                            }
-                        },
-                        enabled = newTableName.isNotBlank()
-                    ) {
-                        Text("CREATE")
-                    }
-                },
-                dismissButton = {
-                    Button(
-                        onClick = {
+    if (showCreateTableDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showCreateTableDialog = false
+                newTableName = ""
+            },
+            title = {
+                Text(text = "CREATE TABLE")
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Ingrese el nombre de la mesa para crearla en la API.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedTextField(
+                        value = newTableName,
+                        onValueChange = { newTableName = it },
+                        singleLine = true,
+                        label = { Text("Mesa") },
+                        placeholder = { Text("Ej. Terraza 1") }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val tableName = newTableName.trim()
+                        if (tableName.isNotEmpty()) {
+                            viewModel.createTable(tableName)
                             showCreateTableDialog = false
                             newTableName = ""
                         }
-                    ) {
-                        Text("CANCEL")
-                    }
+                    },
+                    enabled = newTableName.isNotBlank()
+                ) {
+                    Text("CREATE")
                 }
-            )
-        }
+            },
+            dismissButton = {
+                Button(
+                    onClick = {
+                        showCreateTableDialog = false
+                        newTableName = ""
+                    }
+                ) {
+                    Text("CANCEL")
+                }
+            }
+        )
     }
 }
 
@@ -318,7 +323,8 @@ fun StatusBadge(label: String, color: Color) {
 @Composable
 fun TableCard(
     table: ActiveTable,
-    onAction: () -> Unit
+    onAction: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val borderColor = when (table.status) {
         TableStatus.ACTIVE, TableStatus.CALLING -> MaterialTheme.colorScheme.tertiary
@@ -336,15 +342,23 @@ fun TableCard(
             .border(1.dp, borderColor, RoundedCornerShape(2.dp))
             .padding(20.dp)
     ) {
-        // Corner Accent
-        Box(
+        // Delete Action
+        IconButton(
+            onClick = onDelete,
             modifier = Modifier
-                .size(60.dp)
                 .align(Alignment.TopEnd)
-                .offset(x = 30.dp, y = (-30).dp)
+                .size(32.dp)
+                .offset(x = 10.dp, y = (-10).dp)
                 .clip(CircleShape)
-                .background(borderColor.copy(alpha = 0.05f))
-        )
+                .background(MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Delete",
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(16.dp)
+            )
+        }
 
         Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
             Row(
@@ -436,6 +450,7 @@ fun TableCard(
                         label = "REQUESTS",
                         value = table.queuedRequests.toString(),
                         subLabel = if (table.isPlaying) "Playing" else "Queued",
+
                         icon = Icons.Default.QueueMusic
                     )
                 }
@@ -555,7 +570,13 @@ fun EqualizerAnimation() {
 }
 
 @Composable
-fun StaffBottomNavigation() {
+fun StaffBottomNavigation(
+    onHomeClick: () -> Unit,
+    onRequestsClick: () -> Unit,
+    onTablesClick: () -> Unit,
+    onBillsClick: () -> Unit,
+    onProfileClick: () -> Unit
+) {
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier
@@ -574,7 +595,15 @@ fun StaffBottomNavigation() {
         items.forEach { (icon, label, isSelected) ->
             NavigationBarItem(
                 selected = isSelected,
-                onClick = { /* Nav */ },
+                onClick = { 
+                    when(label) {
+                        "HOME" -> onHomeClick()
+                        "REQUESTS" -> onRequestsClick()
+                        "TABLES" -> onTablesClick()
+                        "BILLS" -> onBillsClick()
+                        "PROFILE" -> onProfileClick()
+                    }
+                },
                 icon = {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -615,7 +644,10 @@ fun B4_MesasActivasScreenPreview() {
     NeonBeatsTheme {
         B4_MesasActivasScreen(
             meseroViewModel,
-            onNavigateBack = {}
+            onNavigateToHome = {},
+            onNavigateToRequests = {},
+            onNavigateToBills = {},
+            onNavigateToProfile = {}
         )
     }
 }
