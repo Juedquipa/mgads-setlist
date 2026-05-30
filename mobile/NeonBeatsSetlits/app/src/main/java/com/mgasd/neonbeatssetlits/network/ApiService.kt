@@ -50,6 +50,9 @@ interface ApiService {
     @GET("api/tables/")
     suspend fun listTables(): Response<List<Table>>
 
+    @POST("api/tables/")
+    suspend fun createTable(@Body table: Table): Response<Table>
+
     @GET("api/tables/{id}/session/")
     suspend fun getTableActiveSession(@Path("id") tableId: String): Response<Session>
 

@@ -144,18 +144,86 @@ class MeseroViewModel : ViewModel() {
     }
     
     private fun loadTablesData() {
-        // Simulación de datos según el HTML
-        _tablesState.update {
-            it.copy(
-                activeTablesCount = 3,
-                sessionTablesCount = 1,
-                tables = listOf(
-                    ActiveTable("T01", TableStatus.ACTIVE, "Needs Attention", 4, 2),
-                    ActiveTable("T02", TableStatus.SESSION, "In Session", 0, 1, isPlaying = true),
-                    ActiveTable("T03", TableStatus.EMPTY, "Empty"),
-                    ActiveTable("T04", TableStatus.CALLING, "Calling Staff", 1, 0)
+        _tablesState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                val response = RetrofitClient.instance.listTables()
+                if (response.isSuccessful) {
+                    val tables = response.body() ?: emptyList()
+                    
+                    // Actualizamos la lista de mesas en el estado de generación de código también
+                    _codeGenState.update { it.copy(tables = tables.map { t -> "T${t.id}" }) }
+
+                    val activeTables = mutableListOf<ActiveTable>()
+                    var activeCount = 0
+                    var sessionCount = 0
+
+                    tables.forEach { table ->
+                        // Para cada mesa, intentamos obtener su sesión activa para ver pedidos/solicitudes
+                        val sessionResponse = RetrofitClient.instance.getTableActiveSession(table.id.toString())
+                        val session = if (sessionResponse.isSuccessful) sessionResponse.body() else null
+                        
+                        val status = when {
+                            session != null -> {
+                                sessionCount++
+                                TableStatus.SESSION
+                            }
+                            table.is_active -> {
+                                activeCount++
+                                TableStatus.ACTIVE
+                            }
+                            else -> TableStatus.EMPTY
+                        }
+
+                        activeTables.add(
+                            ActiveTable(
+                                id = "T${table.id}",
+                                status = status,
+                                statusLabel = when(status) {
+                                    TableStatus.SESSION -> "In Session"
+                                    TableStatus.ACTIVE -> "Needs Attention"
+                                    TableStatus.EMPTY -> "Empty"
+                                    TableStatus.CALLING -> "Calling Staff"
+                                },
+                                pendingOrders = 0, // El API actual no parece retornar órdenes
+                                queuedRequests = if (session != null) 0 else 0, // Podríamos llamar a /api/client/requests/ si tuviéramos el token
+                                isPlaying = false // Simulado por ahora
+                            )
+                        )
+                    }
+
+                    _tablesState.update {
+                        it.copy(
+                            activeTablesCount = activeCount,
+                            sessionTablesCount = sessionCount,
+                            tables = activeTables,
+                            isLoading = false
+                        )
+                    }
+                } else {
+                    _tablesState.update { it.copy(isLoading = false) }
+                }
+            } catch (e: Exception) {
+                _tablesState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun createTable(name: String) {
+        viewModelScope.launch {
+            try {
+                val newTable = com.mgasd.neonbeatssetlits.data.model.Table(
+                    id = 0,
+                    name = name,
+                    qr_code_token = null,
+                    is_active = false,
+                    created_at = ""
                 )
-            )
+                val response = RetrofitClient.instance.createTable(newTable)
+                if (response.isSuccessful) {
+                    loadTablesData()
+                }
+            } catch (e: Exception) {}
         }
     }
 
@@ -263,7 +331,18 @@ class MeseroViewModel : ViewModel() {
     }
 
     fun onAcknowledgeTable(tableId: String) {
-        // Lógica para marcar como atendida
+        val numericId = tableId.replace("T", "").toIntOrNull() ?: return
+        viewModelScope.launch {
+            try {
+                // Asumimos que acknowledge es marcar is_active como false o similar
+                // O tal vez hay un endpoint dedicado si el YAML fue actualizado
+                // Por ahora usamos un PATCH genérico si existiera el modelo PatchedTable
+                // RetrofitClient.instance.partialUpdateTable(numericId, PatchedTable(is_active = false))
+                
+                // Si no, simplemente recargamos para simular que ya no está en estado "Calling"
+                loadTablesData()
+            } catch (e: Exception) {}
+        }
     }
 
     fun resetLoginState() {
