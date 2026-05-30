@@ -1,4 +1,11 @@
-from apps.music_queue.views import ApprovalViewSet, PinCodeViewSet, QueueViewSet
+from apps.music_queue.views import (
+    ApprovalViewSet,
+    ClientPinCodeValidateView,
+    ClientRequestSongView,
+    ClientSessionView,
+    PinCodeViewSet,
+    QueueViewSet,
+)
 from apps.users.views import CustomTokenObtainPairView, WaiterViewSet
 from apps.venues.views import TableViewSet
 from django.urls import include, path
@@ -21,6 +28,18 @@ urlpatterns = [
     # Auth
     path("auth/login/", CustomTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    # Client specific endpoints
+    path("client/session/", ClientSessionView.as_view(), name="client-session"),
+    path(
+        "client/pin-validate/",
+        ClientPinCodeValidateView.as_view(),
+        name="client-pin-validate",
+    ),
+    path(
+        "client/request-song/",
+        ClientRequestSongView.as_view(),
+        name="client-request-song",
+    ),
     # REST Routers
     path("", include(router.urls)),
     # Custom viewsets mapping

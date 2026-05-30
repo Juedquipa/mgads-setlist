@@ -10,8 +10,18 @@ class SpotifySearchView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(
+        summary="Search Spotify tracks",
+        description=(
+            "Searches the tenant's configured Spotify catalog for tracks that match "
+            "the given query."
+        ),
         parameters=[
-            OpenApiParameter(name="q", description="Search query", required=True, type=str),
+            OpenApiParameter(
+                name="q",
+                description="Free-text search query.",
+                required=True,
+                type=str,
+            ),
         ],
         responses={200: dict, 400: dict, 502: dict},
     )
@@ -42,7 +52,13 @@ class SpotifySearchView(views.APIView):
 class SpotifyTrackView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    @extend_schema(responses={200: dict, 400: dict, 502: dict})
+    @extend_schema(
+        summary="Get a Spotify track",
+        description=(
+            "Fetches a single track by Spotify ID from the tenant's configured " "Spotify account."
+        ),
+        responses={200: dict, 400: dict, 502: dict},
+    )
     def get(self, request, track_id):
         user = request.user
         if not hasattr(user, "tenant") or not user.tenant:

@@ -25,7 +25,9 @@ class TableViewSet(viewsets.ModelViewSet):
         table = self.get_object()
         active_session = table.sessions.filter(is_active=True).first()
         if not active_session:
-            return Response({"detail": "No active session"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"detail": "No active session"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         # We would serialize the session here. For now returning a placeholder
         from apps.music_queue.serializers import SessionSerializer
