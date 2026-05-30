@@ -30,9 +30,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 import com.mgasd.neonbeatssetlits.viewmodel.CodeHistoryItem
 import com.mgasd.neonbeatssetlits.viewmodel.CodeStatus
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
@@ -474,5 +477,19 @@ fun MeseroBottomNavigation() {
                 )
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun B2_HomeMeseroScreenPreview() {
+
+    val meseroViewModel: MeseroViewModel = viewModel();
+    NeonBeatsTheme {
+        B2_HomeMeseroScreen(
+            meseroViewModel,
+            onNavigateToProfile = {},
+            onNavigateToRequests = {}
+        )
     }
 }
