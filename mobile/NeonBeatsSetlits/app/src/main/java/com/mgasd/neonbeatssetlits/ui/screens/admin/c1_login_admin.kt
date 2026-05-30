@@ -3,13 +3,14 @@ package com.mgasd.neonbeatssetlits.ui.screens.admin
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
@@ -18,8 +19,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -36,7 +39,7 @@ import com.mgasd.neonbeatssetlits.viewmodel.AdminViewModel
 @Composable
 fun AdminLoginScreen(
     viewModel: AdminViewModel,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -54,7 +57,7 @@ fun AdminLoginScreen(
         onUsernameChange = viewModel::onUsernameChange,
         onPasswordChange = viewModel::onPasswordChange,
         onLoginClick = viewModel::onLoginClick,
-        onRecoverAccess = viewModel::onRecoverAccessClick
+        onRecoverAccess = viewModel::onRecoverAccessClick,
     )
 }
 
@@ -208,9 +211,9 @@ fun AdminLoginContent(
                             )
                         }
 
-                        if (error != null) {
+                        error?.let {
                             Text(
-                                text = error,
+                                text = it,
                                 color = MaterialTheme.colorScheme.error,
                                 style = MaterialTheme.typography.bodySmall,
                                 textAlign = TextAlign.Center,
@@ -239,7 +242,7 @@ fun AdminLoginContent(
                                         text = "ACCEDER AL PANEL",
                                         style = MaterialTheme.typography.headlineSmall.copy(fontSize = 18.sp, fontWeight = FontWeight.Bold)
                                     )
-                                    Icon(Icons.Default.ArrowForward, contentDescription = null)
+                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
                                 }
                             }
                         }
@@ -275,7 +278,7 @@ fun AdminLoginPreview() {
             onUsernameChange = {},
             onPasswordChange = {},
             onLoginClick = {},
-            onRecoverAccess = {}
+            onRecoverAccess = {},
         )
     }
 }

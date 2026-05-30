@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.PendingActions
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.automirrored.filled.QueueMusic
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
@@ -208,7 +208,7 @@ fun NowPlayingAdminCard(
                     Surface(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f), shape = CircleShape) {
                         Text(
                             text = "SONANDO AHORA",
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelSmall.copy(letterSpacing = 2.sp),
                             color = MaterialTheme.colorScheme.secondary
                         )
@@ -265,10 +265,10 @@ fun MetricBox(modifier: Modifier = Modifier, icon: ImageVector, title: String, v
 fun PendingRequestsCard(count: Int) {
     Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            Icon(imageVector = Icons.AutoMirrored.Filled.PendingActions, contentDescription = null, modifier = Modifier.align(Alignment.BottomEnd).size(96.dp).alpha(0.05f), tint = MaterialTheme.colorScheme.secondary)
+            Icon(imageVector = Icons.Default.PendingActions, contentDescription = null, modifier = Modifier.align(Alignment.BottomEnd).size(96.dp).alpha(0.05f), tint = MaterialTheme.colorScheme.secondary)
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.PendingActions, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                    Icon(imageVector = Icons.Default.PendingActions, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
                     Surface(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f), shape = CircleShape) {
                         Text(text = "REQUIERE ATENCIÓN", modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp), style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold), color = MaterialTheme.colorScheme.secondary)
                     }
@@ -285,7 +285,7 @@ fun PendingRequestsCard(count: Int) {
 fun QuickAccessSection(onSetlist: () -> Unit, onAnuncios: () -> Unit, onAudio: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(text = "ACCESOS RÁPIDOS", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
-        QuickAccessItem(icon = Icons.Default.FormatListBulleted, title = "Gestionar Setlist", subtitle = "Editar lista de reproducción actual", color = MaterialTheme.colorScheme.primary, onClick = onSetlist)
+        QuickAccessItem(icon = Icons.AutoMirrored.Filled.FormatListBulleted, title = "Gestionar Setlist", subtitle = "Editar lista de reproducción actual", color = MaterialTheme.colorScheme.primary, onClick = onSetlist)
         QuickAccessItem(icon = Icons.Default.RecordVoiceOver, title = "Anuncios en Sala", subtitle = "Emitir mensajes por PA", color = MaterialTheme.colorScheme.tertiary, onClick = onAnuncios)
         QuickAccessItem(icon = Icons.Default.SettingsInputComponent, title = "Configuración de Audio", subtitle = "Ajustes de mesa de mezclas", color = MaterialTheme.colorScheme.secondary, onClick = onAudio)
     }
