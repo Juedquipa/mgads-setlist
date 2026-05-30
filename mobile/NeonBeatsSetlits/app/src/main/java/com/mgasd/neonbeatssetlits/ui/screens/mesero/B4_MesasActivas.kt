@@ -1,0 +1,427 @@
+package com.mgasd.neonbeatssetlits.ui.screens.mesero
+
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
+import com.mgasd.neonbeatssetlits.viewmodel.ActiveTable
+import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
+import com.mgasd.neonbeatssetlits.viewmodel.TableStatus
+
+/**
+ * Pantalla B4 - Mesas Activas
+ * Estética: Industrial Neon Underground
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun B4_MesasActivasScreen(
+    viewModel: MeseroViewModel,
+    onNavigateBack: () -> Unit
+) {
+    val state by viewModel.tablesState.collectAsStateWithLifecycle()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Scanlines industrial overlay
+        Canvas(modifier = Modifier.fillMaxSize().alpha(0.05f)) {
+            val scanlineSpacing = 4.dp.toPx()
+            for (y in 0 until size.height.toInt() step scanlineSpacing.toInt()) {
+                drawLine(
+                    color = Color.White,
+                    start = Offset(0f, y.toFloat()),
+                    end = Offset(size.width, y.toFloat()),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+        }
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            "NEON BEATS SETLIST",
+                            style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = { /* Drawer */ }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Menu", tint = MaterialTheme.colorScheme.primary)
+                        }
+                    },
+                    actions = {
+                        Surface(
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            shape = RoundedCornerShape(2.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Text(
+                                "STAFF VIEW",
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                )
+            },
+            bottomBar = {
+                StaffBottomNavigation()
+            },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = { /* Add table/action */ },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = CircleShape,
+                    modifier = Modifier.shadow(12.dp, CircleShape, spotColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add")
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                item { Spacer(modifier = Modifier.height(8.dp)) }
+
+                // Floor Status Header
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        Column {
+                            Text(
+                                "FLOOR STATUS",
+                                style = MaterialTheme.typography.displaySmall.copy(
+                                    fontWeight = FontWeight.Black,
+                                    letterSpacing = (-1).sp
+                                ),
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Text(
+                                "Real-time table monitoring & requests",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            StatusBadge(label = "ACTIVE (${state.activeTablesCount})", color = MaterialTheme.colorScheme.tertiary)
+                            StatusBadge(label = "SESSION (${state.sessionTablesCount})", color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                    
+                    Divider(
+                        modifier = Modifier.padding(top = 16.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        thickness = 1.dp
+                    )
+                }
+
+                // Table Grid (Mocked as items in LazyColumn for simplicity)
+                items(state.tables) { table ->
+                    TableCard(
+                        table = table,
+                        onAction = { 
+                            if (table.status == TableStatus.CALLING) viewModel.onAcknowledgeTable(table.id)
+                        }
+                    )
+                }
+
+                item { Spacer(modifier = Modifier.height(80.dp)) }
+            }
+        }
+    }
+}
+
+@Composable
+fun StatusBadge(label: String, color: Color) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(2.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.5f))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Box(modifier = Modifier.size(6.dp).background(color, CircleShape))
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = color
+            )
+        }
+    }
+}
+
+@Composable
+fun TableCard(
+    table: ActiveTable,
+    onAction: () -> Unit
+) {
+    val borderColor = when (table.status) {
+        TableStatus.ACTIVE, TableStatus.CALLING -> MaterialTheme.colorScheme.tertiary
+        TableStatus.SESSION -> MaterialTheme.colorScheme.primary
+        TableStatus.EMPTY -> MaterialTheme.colorScheme.outlineVariant
+    }
+
+    val glowColor = borderColor.copy(alpha = 0.4f)
+    
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(if (table.status != TableStatus.EMPTY) 8.dp else 0.dp, spotColor = glowColor)
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(2.dp))
+            .border(1.dp, borderColor, RoundedCornerShape(2.dp))
+            .padding(20.dp)
+    ) {
+        // Corner Accent
+        Box(
+            modifier = Modifier
+                .size(60.dp)
+                .align(Alignment.TopEnd)
+                .offset(x = 30.dp, y = (-30).dp)
+                .clip(CircleShape)
+                .background(borderColor.copy(alpha = 0.05f))
+        )
+
+        Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        table.id,
+                        style = MaterialTheme.typography.displaySmall.copy(
+                            fontWeight = FontWeight.Black,
+                            fontFamily = FontFamily.SansSerif
+                        ),
+                        color = borderColor
+                    )
+                    
+                    Surface(
+                        color = borderColor.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(2.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, borderColor.copy(alpha = 0.4f))
+                    ) {
+                        Text(
+                            table.statusLabel.uppercase(),
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = borderColor
+                        )
+                    }
+                }
+
+                if (table.isPlaying) {
+                    EqualizerAnimation()
+                } else {
+                    Icon(
+                        imageVector = when(table.status) {
+                            TableStatus.CALLING -> Icons.Default.NotificationsActive
+                            TableStatus.EMPTY -> Icons.Default.Chair
+                            else -> Icons.Default.PriorityHigh
+                        },
+                        contentDescription = null,
+                        tint = borderColor,
+                        modifier = if (table.status == TableStatus.CALLING) Modifier.size(24.dp) else Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            if (table.status == TableStatus.EMPTY) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(2.dp))
+                        .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "Ready for seating",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TableMetric(
+                        modifier = Modifier.weight(1f),
+                        label = "ORDERS",
+                        value = table.pendingOrders.toString(),
+                        subLabel = "Pending",
+                        icon = Icons.Default.ReceiptLong
+                    )
+                    TableMetric(
+                        modifier = Modifier.weight(1f),
+                        label = "REQUESTS",
+                        value = table.queuedRequests.toString(),
+                        subLabel = if (table.isPlaying) "Playing" else "Queued",
+                        icon = Icons.Default.QueueMusic
+                    )
+                }
+            }
+
+            Button(
+                onClick = onAction,
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(0.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (table.status == TableStatus.EMPTY) Color.Transparent else borderColor,
+                    contentColor = if (table.status == TableStatus.EMPTY) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onPrimary
+                ),
+                border = if (table.status == TableStatus.EMPTY) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null
+            ) {
+                Text(
+                    text = when(table.status) {
+                        TableStatus.ACTIVE -> "VIEW ORDERS"
+                        TableStatus.SESSION -> "MANAGE"
+                        TableStatus.EMPTY -> "ASSIGN"
+                        TableStatus.CALLING -> "ACKNOWLEDGE"
+                    },
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 2.sp
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TableMetric(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    subLabel: String,
+    icon: ImageVector
+) {
+    Column(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.background, RoundedCornerShape(2.dp))
+            .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(2.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(value, style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.onBackground)
+            Text(subLabel, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 4.dp))
+        }
+    }
+}
+
+@Composable
+fun EqualizerAnimation() {
+    val infiniteTransition = rememberInfiniteTransition(label = "equalizer")
+    
+    Row(
+        modifier = Modifier.height(24.dp),
+        verticalAlignment = Alignment.Bottom,
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        repeat(5) { index ->
+            val height by infiniteTransition.animateFloat(
+                initialValue = 0.2f,
+                targetValue = 1f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(
+                        durationMillis = 400 + (index * 100),
+                        easing = FastOutSlowInEasing
+                    ),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "bar_$index"
+            )
+            
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight(height)
+                    .background(MaterialTheme.colorScheme.primary)
+            )
+        }
+    }
+}
+
+@Composable
+fun StaffBottomNavigation() {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.background,
+        modifier = Modifier.height(80.dp).border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(0.dp)),
+        tonalElevation = 0.dp
+    ) {
+        val items = listOf(
+            Triple(Icons.Default.Home, "HOME", false),
+            Triple(Icons.Default.QueueMusic, "REQUESTS", false),
+            Triple(Icons.Default.RestaurantMenu, "TABLES", true),
+            Triple(Icons.Default.ReceiptLong, "BILLS", false),
+            Triple(Icons.Default.Person, "PROFILE", false)
+        )
+
+        items.forEach { (icon, label, isSelected) ->
+            NavigationBarItem(
+                selected = isSelected,
+                onClick = { /* Nav */ },
+                icon = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Icon(
+                            icon, 
+                            contentDescription = label,
+                            tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = if (isSelected) Modifier.shadow(8.dp, CircleShape, spotColor = MaterialTheme.colorScheme.primary) else Modifier
+                        )
+                        Text(
+                            label, 
+                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    }
+                },
+                colors = NavigationBarItemDefaults.colors(indicatorColor = Color.Transparent)
+            )
+        }
+    }
+}

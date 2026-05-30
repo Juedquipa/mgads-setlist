@@ -50,6 +50,26 @@ data class MeseroCodeGenerationState(
     val isGenerating: Boolean = false
 )
 
+enum class TableStatus {
+    ACTIVE, SESSION, EMPTY, CALLING
+}
+
+data class ActiveTable(
+    val id: String,
+    val status: TableStatus,
+    val statusLabel: String,
+    val pendingOrders: Int = 0,
+    val queuedRequests: Int = 0,
+    val isPlaying: Boolean = false
+)
+
+data class MeseroTablesState(
+    val activeTablesCount: Int = 0,
+    val sessionTablesCount: Int = 0,
+    val tables: List<ActiveTable> = emptyList(),
+    val isLoading: Boolean = false
+)
+
 class MeseroViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(MeseroLoginState())
@@ -61,8 +81,12 @@ class MeseroViewModel : ViewModel() {
     private val _codeGenState = MutableStateFlow(MeseroCodeGenerationState())
     val codeGenState: StateFlow<MeseroCodeGenerationState> = _codeGenState.asStateFlow()
 
+    private val _tablesState = MutableStateFlow(MeseroTablesState())
+    val tablesState: StateFlow<MeseroTablesState> = _tablesState.asStateFlow()
+
     init {
         loadHomeData()
+        loadTablesData()
     }
 
     private fun loadHomeData() {
@@ -116,6 +140,22 @@ class MeseroViewModel : ViewModel() {
                     // Update state or reload
                 }
             } catch (e: Exception) {}
+        }
+    }
+    
+    private fun loadTablesData() {
+        // Simulación de datos según el HTML
+        _tablesState.update {
+            it.copy(
+                activeTablesCount = 3,
+                sessionTablesCount = 1,
+                tables = listOf(
+                    ActiveTable("T01", TableStatus.ACTIVE, "Needs Attention", 4, 2),
+                    ActiveTable("T02", TableStatus.SESSION, "In Session", 0, 1, isPlaying = true),
+                    ActiveTable("T03", TableStatus.EMPTY, "Empty"),
+                    ActiveTable("T04", TableStatus.CALLING, "Calling Staff", 1, 0)
+                )
+            )
         }
     }
 
@@ -220,6 +260,10 @@ class MeseroViewModel : ViewModel() {
 
     fun onGenerateNewCode() {
         onGenerateCodeClick()
+    }
+
+    fun onAcknowledgeTable(tableId: String) {
+        // Lógica para marcar como atendida
     }
 
     fun resetLoginState() {
