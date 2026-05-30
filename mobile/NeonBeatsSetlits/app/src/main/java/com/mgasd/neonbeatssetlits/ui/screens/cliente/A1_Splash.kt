@@ -28,7 +28,8 @@ import com.mgasd.neonbeatssetlits.ui.theme.NeonBeatsTheme
 
 @Composable
 fun A1_SplashScreen(
-    onNavigateToScanner: () -> Unit
+    onNavigateToScanner: () -> Unit,
+    onNavigateToMeseroLogin: () -> Unit,
 ) {
     // Animación de pulso para el texto Neón
     val infiniteTransition = rememberInfiniteTransition(label = "NeonPulse")
@@ -133,7 +134,7 @@ fun A1_SplashScreen(
 
                 Spacer(modifier = Modifier.weight(1f))
 
-                // Botón de Acción
+                // Botón de Acción Principal (Cliente)
                 Button(
                     onClick = onNavigateToScanner,
                     modifier = Modifier
@@ -141,8 +142,8 @@ fun A1_SplashScreen(
                         .height(72.dp)
                         .shadow(
                             elevation = 24.dp,
-                            spotColor = NeonGreen.copy(alpha = 0.6f),
-                            ambientColor = NeonGreen.copy(alpha = 0.6f)
+                            spotColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                            ambientColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
                         ),
                     shape = RoundedCornerShape(4.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -165,6 +166,29 @@ fun A1_SplashScreen(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Botón de Acceso Personal (Mesero)
+                OutlinedButton(
+                    onClick = onNavigateToMeseroLogin,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(4.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.tertiary
+                    )
+                ) {
+                    Text(
+                        text = "ACCESO PERSONAL / MESERO",
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        )
+                    )
+                }
+
                 Text(
                     text = "REQUIERE ACCESO A LA CÁMARA",
                     style = MaterialTheme.typography.bodySmall.copy(
@@ -183,6 +207,9 @@ fun A1_SplashScreen(
 @Composable
 fun A1_SplashPreview() {
     NeonBeatsTheme {
-        A1_SplashScreen(onNavigateToScanner = {})
+        A1_SplashScreen(
+            onNavigateToScanner = {},
+            onNavigateToMeseroLogin = {}
+        )
     }
 }

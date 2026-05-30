@@ -11,8 +11,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.mgasd.neonbeatssetlits.ui.screens.admin.*
 import com.mgasd.neonbeatssetlits.ui.screens.cliente.*
 import com.mgasd.neonbeatssetlits.ui.screens.mesero.*
+import com.mgasd.neonbeatssetlits.viewmodel.AdminViewModel
 import com.mgasd.neonbeatssetlits.viewmodel.ClienteViewModel
 import com.mgasd.neonbeatssetlits.viewmodel.MeseroViewModel
 
@@ -36,13 +38,20 @@ sealed class Screen(val route: String) {
     object LoginWaiter : Screen("login_mesero")
     object HomeWaiter : Screen("home_mesero")
     object GenerateCode : Screen("generacion_codigo")
+
+    // Admin Screens
+    object LoginAdmin : Screen("login_admin")
+    object DashboardDj : Screen("dashboard_dj")
+    object QueueManagement : Screen("queue_management")
+    object Approvals : Screen("aprobaciones")
 }
 
 @Composable
 fun SetupNavGraph(
     navController: NavHostController,
     clienteViewModel: ClienteViewModel = viewModel(),
-    meseroViewModel: MeseroViewModel = viewModel()
+    meseroViewModel: MeseroViewModel = viewModel(),
+    adminViewModel: AdminViewModel = viewModel()
 ) {
     NavHost(
         navController = navController,
@@ -57,6 +66,9 @@ fun SetupNavGraph(
                 A1_SplashScreen(
                     onNavigateToScanner = {
                         navController.navigate(Screen.ScanQR.route)
+                    },
+                    onNavigateToMeseroLogin = {
+                        navController.navigate(Screen.WaiterFlow.route)
                     }
                 )
             }
@@ -164,18 +176,35 @@ fun SetupNavGraph(
             }
         }
 
-        // Flujo del Administrador (Placeholder)
+        // Subgrafo del Administrador
         navigation(
-            startDestination = "admin_placeholder",
+            startDestination = Screen.LoginAdmin.route,
             route = Screen.AdminFlow.route
         ) {
-            composable("admin_placeholder") {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Módulo en Mantenimiento")
-                }
+            composable(Screen.LoginAdmin.route) {
+                AdminLoginScreen(
+                    viewModel = adminViewModel,
+                    onLoginSuccess = {
+                        navController.navigate(Screen.DashboardDj.route) {
+                            popUpTo(Screen.LoginAdmin.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
+            composable(Screen.DashboardDj.route) {
+                DashboardDjScreen(
+                    viewModel = adminViewModel
+                )
+            }
+            composable(Screen.QueueManagement.route) {
+                QueueManagementScreen(
+                    viewModel = adminViewModel
+                )
+            }
+            composable(Screen.Approvals.route) {
+                AprobacionesScreen(
+                    viewModel = adminViewModel
+                )
             }
         }
     }
