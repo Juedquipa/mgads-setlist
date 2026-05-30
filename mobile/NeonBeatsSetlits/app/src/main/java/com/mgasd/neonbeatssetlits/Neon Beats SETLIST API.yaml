@@ -84,24 +84,34 @@ paths:
   /api/auth/login/:
     post:
       operationId: auth_login_create
-      description: Authenticates a user with username and password and returns a refresh
-        token plus a short-lived access token. The access token includes custom role
-        and tenant claims.
-      summary: Log in and get JWT tokens
+      description: Authenticates a staff user with username plus either a persistent
+        staff PIN or a password, then returns a refresh token plus a short-lived access
+        token. The access token includes custom role and tenant claims.
+      summary: Log in with username plus PIN or password
       tags:
       - auth
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: '#/components/schemas/StaffLoginRequest'
+            examples:
+              StaffPINLogin:
+                value:
+                  username: staff@example.com
+                  pin: '1234'
+                summary: Staff PIN login
+              StaffUsername/passwordLogin:
+                value:
+                  username: staff@example.com
+                  password: secret
+                summary: Staff username/password login
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: '#/components/schemas/StaffLoginRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
-        required: true
+              $ref: '#/components/schemas/StaffLoginRequest'
       responses:
         '200':
           content:
@@ -635,10 +645,9 @@ paths:
   /api/staff/login/:
     post:
       operationId: staff_login_create
-      description: Authenticates a staff user either with a persistent staff PIN or
-        with username and password, then returns a refresh token plus a short-lived
-        access token. The access token includes custom role and tenant claims.
-      summary: Staff log in with a PIN or password
+      description: Alias for the main login flow so the staff-facing route exposes
+        the same request bodies and authentication behavior.
+      summary: Staff login alias
       tags:
       - staff
       requestBody:
@@ -1064,19 +1073,6 @@ components:
           type: string
       required:
       - detail
-    LoginRequest:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Account username.
-        password:
-          type: string
-          writeOnly: true
-          description: Account password.
-      required:
-      - password
-      - username
     PatchedPinCode:
       type: object
       properties:
@@ -1407,6 +1403,10 @@ components:
       - offset
       - total
     StaffLoginRequest:
+      oneOf:
+      - $ref: '#/components/schemas/StaffPinLoginRequest'
+      - $ref: '#/components/schemas/StaffPasswordLoginRequest'
+    StaffPasswordLoginRequest:
       type: object
       properties:
         username:
@@ -1416,9 +1416,21 @@ components:
           type: string
           writeOnly: true
           description: Staff password.
+      required:
+      - password
+      - username
+    StaffPinLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Staff username.
         pin:
           type: string
-          description: Staff login PIN.
+          description: Persistent 4-digit staff PIN.
+      required:
+      - pin
+      - username
     StatusEnum:
       enum:
       - PENDING

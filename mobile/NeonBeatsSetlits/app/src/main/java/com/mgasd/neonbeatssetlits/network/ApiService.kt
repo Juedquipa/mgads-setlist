@@ -17,6 +17,9 @@ interface ApiService {
     @POST("api/client/session/")
     suspend fun createClientSession(@Body request: ClientSessionRequest): Response<Session>
 
+    @POST("api/client/pin-login/")
+    suspend fun clientPinLogin(@Body request: ClientPinCodeValidateRequest): Response<Session>
+
     @POST("api/client/pin-validate/")
     suspend fun validatePin(
         @Header("X-Session-Token") sessionToken: String,

@@ -245,11 +245,11 @@ class MeseroViewModel : ViewModel() {
         
         viewModelScope.launch {
             try {
-                // El pin se envía como password según el spec de LoginRequest
+                // El server ahora soporta un campo 'pin' específico para staff
                 val response = RetrofitClient.instance.login(
                     LoginRequest(
                         username = _uiState.value.username,
-                        password = _uiState.value.pin
+                        pin = _uiState.value.pin
                     )
                 )
 
