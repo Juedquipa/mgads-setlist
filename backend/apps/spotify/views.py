@@ -4,6 +4,7 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import permissions, status, views
 from rest_framework.response import Response
 
+from .serializers import SpotifySearchResponseSerializer, SpotifyTrackSerializer
 from .services import SpotifyService
 
 
@@ -24,7 +25,11 @@ class SpotifySearchView(views.APIView):
                 type=str,
             ),
         ],
-        responses={200: dict, 400: ErrorResponseSerializer, 502: ErrorResponseSerializer},
+        responses={
+            200: SpotifySearchResponseSerializer,
+            400: ErrorResponseSerializer,
+            502: ErrorResponseSerializer,
+        },
     )
     def get(self, request):
         user = request.user
@@ -56,9 +61,22 @@ class SpotifyTrackView(views.APIView):
     @extend_schema(
         summary="Get a Spotify track",
         description=(
-            "Fetches a single track by Spotify ID from the tenant's configured " "Spotify account."
+            "Fetches a single track by Spotify ID from the tenant's configured Spotify account."
         ),
-        responses={200: dict, 400: ErrorResponseSerializer, 502: ErrorResponseSerializer},
+        parameters=[
+            OpenApiParameter(
+                name="track_id",
+                location=OpenApiParameter.PATH,
+                required=True,
+                type=str,
+                description="Spotify track ID to retrieve.",
+            )
+        ],
+        responses={
+            200: SpotifyTrackSerializer,
+            400: ErrorResponseSerializer,
+            502: ErrorResponseSerializer,
+        },
     )
     def get(self, request, track_id):
         user = request.user
