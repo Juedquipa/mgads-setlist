@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -268,6 +269,7 @@ fun A2_EscaneoQR(
     }
 }
 
+@OptIn(ExperimentalGetImage::class)
 @Composable
 fun CameraPreview(
     onBarcodeScanned: (Barcode) -> Unit,

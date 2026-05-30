@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.mgasd.neonbeatssetlits"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.mgasd.neonbeatssetlits"
         minSdk = 34
-        targetSdk = 35
+        targetSdk = compileSdk
         versionCode = 1
         versionName = "1.0"
 

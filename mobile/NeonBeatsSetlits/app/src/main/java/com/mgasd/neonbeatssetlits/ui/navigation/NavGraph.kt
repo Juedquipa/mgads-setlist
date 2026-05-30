@@ -11,7 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.mgasd.neonbeatssetlits.ui.screens.admin.*
+//import com.mgasd.neonbeatssetlits.ui.screens.gitadmin.*
 import com.mgasd.neonbeatssetlits.ui.screens.cliente.*
 import com.mgasd.neonbeatssetlits.ui.screens.mesero.*
 import com.mgasd.neonbeatssetlits.viewmodel.AdminViewModel
@@ -181,6 +181,7 @@ fun SetupNavGraph(
             startDestination = Screen.LoginAdmin.route,
             route = Screen.AdminFlow.route
         ) {
+            /**
             composable(Screen.LoginAdmin.route) {
                 AdminLoginScreen(
                     viewModel = adminViewModel,
@@ -205,7 +206,7 @@ fun SetupNavGraph(
                 AprobacionesScreen(
                     viewModel = adminViewModel
                 )
-            }
+            }*/
         }
     }
 }
