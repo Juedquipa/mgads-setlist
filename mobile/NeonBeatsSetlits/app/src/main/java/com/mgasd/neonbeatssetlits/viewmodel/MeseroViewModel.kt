@@ -85,8 +85,7 @@ class MeseroViewModel : ViewModel() {
     val tablesState: StateFlow<MeseroTablesState> = _tablesState.asStateFlow()
 
     init {
-        loadHomeData()
-        loadTablesData()
+        // No cargar datos hasta estar autenticado para evitar 401
     }
 
     private fun loadHomeData() {
@@ -241,6 +240,11 @@ class MeseroViewModel : ViewModel() {
     fun onLoginClick() {
         if (_uiState.value.isLoading) return
         
+        if (_uiState.value.username.isBlank() || _uiState.value.pin.length != 4) {
+            _uiState.update { it.copy(errorMessage = "Ingrese usuario y PIN de 4 dígitos") }
+            return
+        }
+
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         
         viewModelScope.launch {
@@ -260,6 +264,9 @@ class MeseroViewModel : ViewModel() {
                             loginSuccess = true 
                         ) 
                     }
+                    // Cargar datos después de login exitoso
+                    loadHomeData()
+                    loadTablesData()
                 } else {
                     _uiState.update { 
                         it.copy(
@@ -272,7 +279,7 @@ class MeseroViewModel : ViewModel() {
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = "Error de conexión: ${e.message}"
+                        errorMessage = "Error de conexión: Verifique su internet"
                     )
                 }
             }

@@ -57,6 +57,7 @@ dependencies {
     
     // Barcode Scanning
     implementation(libs.barcode.scanning)
+    implementation(libs.zxing.core)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
