@@ -9,7 +9,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.FlashlightOff
+import androidx.compose.material.icons.filled.FlashlightOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,6 +39,21 @@ fun A2_EscaneoQR(
 ) {
     val isFlashlightOn by viewModel.isFlashlightOn.collectAsState()
 
+    A2_EscaneoQRContent(
+        isFlashlightOn = isFlashlightOn,
+        onBack = onBack,
+        onToggleFlashlight = { viewModel.toggleFlashlight() },
+        onHelpClick = { viewModel.onHelpClick() }
+    )
+}
+
+@Composable
+fun A2_EscaneoQRContent(
+    isFlashlightOn: Boolean,
+    onBack: () -> Unit,
+    onToggleFlashlight: () -> Unit,
+    onHelpClick: () -> Unit
+) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = Color.Black
@@ -129,7 +146,19 @@ fun A2_EscaneoQR(
                         color = MaterialTheme.colorScheme.primary
                     )
                     
-                    Spacer(modifier = Modifier.size(40.dp))
+                    IconButton(
+                        onClick = onToggleFlashlight,
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.5f))
+                    ) {
+                        Icon(
+                            imageVector = if (isFlashlightOn) Icons.Default.FlashlightOn else Icons.Default.FlashlightOff,
+                            contentDescription = "Linterna",
+                            tint = if (isFlashlightOn) MaterialTheme.colorScheme.primary else Color.White
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(0.4f))
@@ -155,7 +184,7 @@ fun A2_EscaneoQR(
 
                 // Footer Help Button
                 OutlinedButton(
-                    onClick = { viewModel.onHelpClick() },
+                    onClick = onHelpClick,
                     modifier = Modifier
                         .padding(bottom = 48.dp)
                         .height(52.dp),
@@ -167,7 +196,7 @@ fun A2_EscaneoQR(
                     )
                 ) {
                     Icon(
-                        imageVector = Icons.Default.HelpOutline,
+                        imageVector = Icons.AutoMirrored.Filled.HelpOutline,
                         contentDescription = null,
                         modifier = Modifier.size(20.dp)
                     )
@@ -318,9 +347,11 @@ fun ViewfinderCorners(alpha: Float) {
 @Composable
 fun A2_EscaneoQRPreview() {
     NeonBeatsTheme {
-        A2_EscaneoQR(
-            viewModel = ClienteViewModel(),
-            onBack = {}
+        A2_EscaneoQRContent(
+            isFlashlightOn = false,
+            onBack = {},
+            onToggleFlashlight = {},
+            onHelpClick = {}
         )
     }
 }
