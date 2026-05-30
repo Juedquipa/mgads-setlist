@@ -2,7 +2,8 @@ package com.mgasd.neonbeatssetlits.data.model
 
 data class LoginRequest(
     val username: String,
-    val password: String
+    val password: String? = null,
+    val pin: String? = null
 )
 
 data class TokenPairResponse(

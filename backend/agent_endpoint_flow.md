@@ -15,15 +15,20 @@ This document describes the main backend API flow exposed by the project and how
 
 ### `POST /api/auth/login/`
 
-- Accepts username and password.
+- Accepts `username` plus either `pin` or `password`.
 - Returns a refresh token and an access token.
+- If `pin` is provided, the backend authenticates against the user's persistent 4-digit staff PIN for that username.
+- If `password` is provided, the backend uses the standard Django password authentication flow for that username.
 - The custom token payload includes user role and tenant information.
 
 ### `POST /api/staff/login/`
 
-- Staff login via a persistent 6-digit PIN or via username and password.
-- Accepts either `pin` or `username` plus `password` and returns refresh and access tokens.
+- Staff login via username plus a persistent 4-digit PIN or via username and password.
+- Accepts `username` plus either `pin` or `password` and returns refresh and access tokens.
+- If `pin` is provided, the backend authenticates against the user's persistent staff PIN for that username.
+- If `password` is provided, the backend uses the standard Django password authentication flow for that username.
 - The access token includes the staff user's role and tenant information.
+- This is separate from the client credit PIN flow used to unlock song request credits.
 
 ### `POST /api/auth/refresh/`
 
@@ -153,6 +158,13 @@ This document describes the main backend API flow exposed by the project and how
 ### `GET`, `PUT`, `PATCH`, `DELETE /api/pin-codes/{id}/`
 
 - Standard tenant-scoped CRUD operations.
+
+### Staff PIN storage
+
+- Staff users with the `ADMIN` or `WAITER` role have a persistent 4-digit `staff_pin` stored on the user record.
+- The PIN is auto-generated when the staff user is created, and existing staff users are backfilled through a migration.
+- The staff PIN is visible in the Django admin to help operators recover or confirm login credentials.
+- This staff PIN is only for staff authentication and must not be confused with client credit PINs.
 
 ## Spotify flow
 

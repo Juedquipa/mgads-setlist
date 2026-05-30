@@ -84,24 +84,34 @@ paths:
   /api/auth/login/:
     post:
       operationId: auth_login_create
-      description: Authenticates a user with username and password and returns a refresh
-        token plus a short-lived access token. The access token includes custom role
-        and tenant claims.
-      summary: Log in and get JWT tokens
+      description: Authenticates a staff user with username plus either a persistent
+        staff PIN or a password, then returns a refresh token plus a short-lived access
+        token. The access token includes custom role and tenant claims.
+      summary: Log in with username plus PIN or password
       tags:
       - auth
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: '#/components/schemas/StaffLoginRequest'
+            examples:
+              StaffPINLogin:
+                value:
+                  username: staff@example.com
+                  pin: '1234'
+                summary: Staff PIN login
+              StaffUsername/passwordLogin:
+                value:
+                  username: staff@example.com
+                  password: secret
+                summary: Staff username/password login
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              $ref: '#/components/schemas/StaffLoginRequest'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
-        required: true
+              $ref: '#/components/schemas/StaffLoginRequest'
       responses:
         '200':
           content:
@@ -142,6 +152,49 @@ paths:
                 $ref: '#/components/schemas/TokenRefreshResponse'
           description: ''
         '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+  /api/client/pin-login/:
+    post:
+      operationId: client_pin_login_create
+      description: Consumes a valid unused PIN code, creates a client session for
+        the PIN's tenant, and seeds the session with the PIN credits. This is the
+        PIN-based login flow for clients that do not start from a table QR code.
+      summary: Log in with a PIN code
+      tags:
+      - client
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientPinLoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ClientPinLoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ClientPinLoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
           content:
             application/json:
               schema:
@@ -589,6 +642,41 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/staff/login/:
+    post:
+      operationId: staff_login_create
+      description: Alias for the main login flow so the staff-facing route exposes
+        the same request bodies and authentication behavior.
+      summary: Staff login alias
+      tags:
+      - staff
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/StaffLoginRequest'
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/tables/:
     get:
       operationId: tables_list
@@ -940,6 +1028,14 @@ components:
       - credits_added
       - detail
       - new_balance
+    ClientPinLoginRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: PIN code provided by the venue.
+      required:
+      - code
     ClientRequestSongRequest:
       type: object
       properties:
@@ -977,19 +1073,6 @@ components:
           type: string
       required:
       - detail
-    LoginRequest:
-      type: object
-      properties:
-        username:
-          type: string
-          description: Account username.
-        password:
-          type: string
-          writeOnly: true
-          description: Account password.
-      required:
-      - password
-      - username
     PatchedPinCode:
       type: object
       properties:
@@ -1064,6 +1147,9 @@ components:
         last_name:
           type: string
           maxLength: 150
+        staff_pin:
+          type: string
+          readOnly: true
         role:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
@@ -1316,6 +1402,35 @@ components:
       - limit
       - offset
       - total
+    StaffLoginRequest:
+      oneOf:
+      - $ref: '#/components/schemas/StaffPinLoginRequest'
+      - $ref: '#/components/schemas/StaffPasswordLoginRequest'
+    StaffPasswordLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Staff username.
+        password:
+          type: string
+          writeOnly: true
+          description: Staff password.
+      required:
+      - password
+      - username
+    StaffPinLoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Staff username.
+        pin:
+          type: string
+          description: Persistent 4-digit staff PIN.
+      required:
+      - pin
+      - username
     StatusEnum:
       enum:
       - PENDING
@@ -1433,6 +1548,9 @@ components:
         last_name:
           type: string
           maxLength: 150
+        staff_pin:
+          type: string
+          readOnly: true
         role:
           allOf:
           - $ref: '#/components/schemas/RoleEnum'
@@ -1444,6 +1562,7 @@ components:
       required:
       - id
       - role
+      - staff_pin
       - tenant
       - username
   securitySchemes:
