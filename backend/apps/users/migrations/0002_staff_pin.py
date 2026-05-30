@@ -12,9 +12,7 @@ def _generate_unique_staff_pin(User):
 
 def populate_staff_pins(apps, schema_editor):
     User = apps.get_model("users", "User")
-    staff_users = User.objects.filter(
-        role__in=["ADMIN", "WAITER"], staff_pin__isnull=True
-    )
+    staff_users = User.objects.filter(role__in=["ADMIN", "WAITER"], staff_pin__isnull=True)
 
     for user in staff_users:
         user.staff_pin = _generate_unique_staff_pin(User)

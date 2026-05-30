@@ -17,9 +17,7 @@ class User(AbstractUser):
         WAITER = "WAITER", _("Waiter")
 
     staff_pin = models.CharField(max_length=6, unique=True, blank=True, null=True)
-    role = models.CharField(
-        max_length=50, choices=RoleChoices.choices, default=RoleChoices.WAITER
-    )
+    role = models.CharField(max_length=50, choices=RoleChoices.choices, default=RoleChoices.WAITER)
     tenant = models.ForeignKey(
         "tenants.Tenant",
         on_delete=models.CASCADE,
@@ -31,10 +29,7 @@ class User(AbstractUser):
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if (
-            self.role in {self.RoleChoices.ADMIN, self.RoleChoices.WAITER}
-            and not self.staff_pin
-        ):
+        if self.role in {self.RoleChoices.ADMIN, self.RoleChoices.WAITER} and not self.staff_pin:
             self.staff_pin = _generate_staff_pin(type(self))
         super().save(*args, **kwargs)
 
