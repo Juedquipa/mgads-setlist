@@ -206,8 +206,12 @@ class AdminViewModel : ViewModel() {
 
     fun onLoginClick() {
         _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-        // Lógica de autenticación simulada
-        if (_uiState.value.username == "ADMIN" && _uiState.value.password == "1234") {
+        
+        val inputUser = _uiState.value.username.trim()
+        val inputPass = _uiState.value.password.trim()
+
+        // Lógica de autenticación simulada (Case insensitive para usuario)
+        if (inputUser.equals("ADMIN", ignoreCase = true) && inputPass == "1234") {
             _uiState.value = _uiState.value.copy(isLoading = false, loginSuccess = true)
         } else {
             _uiState.value = _uiState.value.copy(isLoading = false, error = "Credenciales Inválidas")
